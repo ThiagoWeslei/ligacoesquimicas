@@ -1,0 +1,323 @@
+/* ============================================================  RESET  */
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#0b0f17;color:#e6edf3;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#2f3a52;border-radius:3px;}
+::-webkit-scrollbar-track{background:#11151f;}
+
+/* ============================================================  LAYOUT  */
+.app-container{display:flex;height:100vh;width:100%;overflow:hidden;}
+
+.sidebar{
+  width:38%;min-width:320px;max-width:440px;
+  background:#161b29;border-right:1px solid #2a3142;
+  padding:12px 14px 14px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:0;
+}
+.sidebar-title{margin:0 0 3px;font-weight:800;letter-spacing:.4px;font-size:1rem;}
+.hint-text{font-size:.72rem;color:#9aa7bd;margin-bottom:8px;line-height:1.4;}
+.sidebar-hr{border-color:#2a3142;margin:8px 0;}
+
+/* ============================================================  BOND NAV  */
+.bond-nav{gap:4px;flex-wrap:wrap;}
+.bond-nav .nav-link{
+  color:#c9d1d9;background:#1f2733;border-radius:6px;
+  font-size:.72rem;font-weight:600;border:1px solid #2a3142;
+  transition:all .2s;padding:4px 8px;white-space:nowrap;
+}
+.bond-nav .nav-link:hover{background:#29354a;}
+.bond-nav .nav-link.active{background:linear-gradient(135deg,#29b6f6,#0277bd);color:#fff;border-color:transparent;}
+.bond-description{font-size:.7rem;color:#aab4c6;background:#1c2330;border-left:3px solid #29b6f6;padding:6px 9px;border-radius:5px;margin:6px 0 4px;line-height:1.45;}
+
+/* ============================================================  SEARCH  */
+.pt-search-bar{margin:6px 0 5px;}
+.pt-search-input{
+  width:100%;padding:5px 10px;border-radius:7px;
+  border:1px solid #2a3142;background:#1a2135;color:#e6edf3;
+  font-size:.78rem;outline:none;transition:border-color .2s;
+}
+.pt-search-input:focus{border-color:#29b6f6;}
+.pt-search-input::placeholder{color:#3e5070;}
+.pt-legend-row{display:flex;flex-wrap:wrap;gap:3px 7px;margin-top:6px;font-size:.58rem;color:#8ea0bf;}
+.pt-legend-item{display:flex;align-items:center;gap:3px;cursor:pointer;transition:opacity .2s;}
+.pt-legend-dot{width:8px;height:8px;border-radius:2px;border:1px solid rgba(255,255,255,.2);flex-shrink:0;}
+.pt-legend-item.dimmed{opacity:.3;}
+
+/* ============================================================  PERIODIC TABLE  */
+.pt-wrapper{margin:2px 0 4px;}
+.pt-grid{display:grid;grid-template-columns:repeat(18,1fr);gap:2px;width:100%;}
+.pt-fblock-label{display:grid;grid-template-columns:1fr 1fr;font-size:.5rem;color:#4a5a72;padding:2px 0 1px 0;gap:2px;}
+.pt-fblock-label span{text-align:center;}
+.pt-fblock{display:grid;grid-template-columns:repeat(15,1fr);gap:2px;width:100%;padding-left:calc(2*(100%/18 + 2px));}
+
+.pt-cell{
+  aspect-ratio:1;border-radius:3px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;
+  border:1px solid rgba(255,255,255,.15);
+  transition:transform .12s,box-shadow .12s,opacity .2s;
+  user-select:none;position:relative;min-width:0;overflow:hidden;
+}
+.pt-cell:hover{transform:scale(1.28);box-shadow:0 0 12px 2px rgba(255,255,255,.35);z-index:20;border-color:rgba(255,255,255,.75);}
+.pt-cell:active{transform:scale(1.12);}
+.pt-cell.dimmed{opacity:.15;}
+.pt-cell.highlighted{opacity:1!important;box-shadow:0 0 8px 2px #29b6f6;border-color:#29b6f6;}
+.pt-cell .c-num{font-size:.44rem;line-height:1;opacity:.7;font-weight:400;}
+.pt-cell .c-sym{font-size:.72rem;line-height:1.05;font-weight:800;}
+.pt-cell .c-name{font-size:.37rem;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.pt-spacer{aspect-ratio:1;}
+
+/* ============================================================  TOOLTIP  */
+.el-tooltip{
+  display:none;position:fixed;z-index:999;
+  background:#1c2a3e;border:1px solid #29b6f6;border-radius:8px;
+  padding:8px 11px;font-size:.72rem;color:#e6edf3;
+  pointer-events:none;max-width:185px;
+  box-shadow:0 4px 20px rgba(0,0,0,.6);line-height:1.5;
+}
+.el-tooltip strong{font-size:.85rem;}
+.el-tooltip .tt-cat{font-size:.6rem;opacity:.7;margin-top:2px;}
+
+/* ============================================================  CONTROLS  */
+.controls-row{display:flex;gap:6px;}
+.controls-row .btn{flex:1;font-weight:600;font-size:.75rem;padding:4px 6px;}
+
+/* ============================================================  PAINEL MOLECULAR  */
+.mol-panel{
+  background:#141e2d;border:1px solid #29b6f6;border-radius:10px;
+  padding:8px 11px;margin:8px 0;
+}
+.mol-panel-header{font-size:.72rem;font-weight:700;color:#29b6f6;margin-bottom:4px;}
+.mol-formula{
+  font-size:1.1rem;font-weight:800;letter-spacing:.5px;
+  color:#e2e8f0;margin-bottom:6px;line-height:1.3;
+}
+.mol-stats{
+  display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.68rem;color:#94a3b8;
+}
+.mol-stats span{display:flex;align-items:center;gap:3px;}
+.mol-stats b{color:#e2e8f0;}
+
+/* ============================================================  ENERGY PANEL  */
+.energy-panel{background:#1c2330;border:1px solid #2a3142;border-radius:9px;padding:7px 9px;margin-bottom:10px;}
+.energy-panel strong{font-size:.78rem;}
+#energy-chart{width:100%;height:auto;display:block;margin-top:4px;}
+.energy-caption{font-size:.67rem;color:#8ea0bf;margin:4px 0 0;text-align:center;}
+.energy-curve{fill:none;stroke:#29b6f6;stroke-width:2;}
+.energy-marker{fill:#ffb74d;stroke:#fff;stroke-width:1;}
+.min-marker{stroke:#69f0ae;stroke-width:1;stroke-dasharray:3 3;}
+.min-label{fill:#69f0ae;font-size:8px;}
+.energy-empty{fill:#5b6b86;font-size:9px;}
+.axis path,.axis line{stroke:#44526e;}
+.axis text{fill:#8ea0bf;font-size:7px;}
+.axis-label{fill:#8ea0bf;font-size:8px;text-anchor:middle;}
+
+/* ============================================================  INFO PANEL  */
+.info-panel{background:#1c2330;border:1px solid #2a3142;border-radius:9px;padding:7px 9px;margin-bottom:10px;}
+.info-panel strong{font-size:.78rem;}
+#info-text{font-size:.73rem;color:#cfd8e8;margin:5px 0 0;line-height:1.45;}
+.iupac-note{display:block;margin-top:5px;padding:5px 7px;background:rgba(41,182,246,.1);border-left:2px solid #29b6f6;border-radius:0 5px 5px 0;font-size:.67rem;color:#9ab8d8;line-height:1.4;}
+
+/* ============================================================  CANVAS  */
+.canvas-area{flex:1;position:relative;padding:12px;display:flex;flex-direction:column;min-width:0;}
+#canvas-wrapper{flex:1;position:relative;border-radius:13px;overflow:hidden;}
+#canvas{
+  position:absolute;inset:0;
+  background-color:#0b0f17;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:32px 32px;
+  border:2px dashed transparent;border-radius:13px;overflow:hidden;
+  transition:border-color .25s,background-color .25s;
+}
+#canvas.drop-active{border-color:#29b6f6;background-color:#0f1c2c;box-shadow:inset 0 0 40px rgba(41,182,246,.25);}
+#canvas-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#3c4a66;font-size:.95rem;text-align:center;width:60%;pointer-events:none;font-style:italic;}
+#canvas-hint.hidden{display:none;}
+#bond-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+
+.bond-edit-hint{
+  font-size:.65rem;color:#94a3b8;
+  background:rgba(41,182,246,.08);border:1px solid rgba(41,182,246,.25);
+  border-radius:5px;padding:4px 7px;margin-top:5px;line-height:1.4;
+}
+#canvas.bond-edit-mode{cursor:crosshair!important;}
+#canvas.bond-edit-mode .atom{pointer-events:none;}
+
+/* Overlay transparente que captura cliques de ligação no modo edição */
+#bond-edit-overlay{
+  display:none;
+  position:absolute;inset:0;
+  z-index:15;       /* acima do SVG (z=5) e dos átomos (z=10) */
+  cursor:crosshair;
+  background:transparent;
+}
+
+/* ============================================================  BOND ORDER SELECTOR  */
+.bond-order-selector {
+  margin-top: 8px;
+  background: #1a2135;
+  border: 1px solid #2a3142;
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.bond-order-label {
+  font-size: .68rem;
+  color: #8ea0bf;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+  letter-spacing: .3px;
+}
+.bond-order-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.bond-order-btn {
+  padding: 5px 4px;
+  border-radius: 6px;
+  border: 1px solid #2a3142;
+  background: #1f2733;
+  color: #94a3b8;
+  font-size: .7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+  white-space: nowrap;
+}
+.bond-order-btn:hover {
+  background: #29354a;
+  color: #e2e8f0;
+  border-color: #4fc3f7;
+}
+.bond-order-btn.active-order {
+  background: linear-gradient(135deg, #0277bd, #29b6f6);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 8px rgba(41,182,246,.4);
+}
+/* Individual bond type coloring when active */
+.bond-order-btn[data-order="1"].active-order { background: linear-gradient(135deg,#0277bd,#29b6f6); }
+.bond-order-btn[data-order="2"].active-order { background: linear-gradient(135deg,#7c3aed,#a78bfa); }
+.bond-order-btn[data-order="3"].active-order { background: linear-gradient(135deg,#b45309,#fbbf24); }
+
+.bond-order-warning {
+  display: none;
+  margin-top: 5px;
+  padding: 4px 7px;
+  background: rgba(239,68,68,.15);
+  border: 1px solid rgba(239,68,68,.4);
+  border-radius: 5px;
+  font-size: .65rem;
+  color: #fca5a5;
+  line-height: 1.35;
+}
+
+/* ============================================================  DELETE MODE  */
+#canvas.delete-mode { cursor: crosshair !important; }
+#canvas.delete-mode .atom { cursor: pointer !important; border-color: #ef4444 !important; }
+#canvas.delete-mode .atom:hover {
+  box-shadow: 0 0 0 3px #ef4444, 0 0 20px 6px rgba(239,68,68,.5) !important;
+  transform: translate(-50%,-50%) scale(1.1);
+}
+
+/* × button inside atom — visible on hover or delete-mode */
+.atom-remove-x {
+  position: absolute;
+  top: -8px; right: -8px;
+  width: 18px; height: 18px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 50%;
+  font-size: .72rem;
+  font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity .15s;
+  pointer-events: none;
+  box-shadow: 0 0 5px rgba(0,0,0,.5);
+  line-height: 1;
+}
+.atom:hover .atom-remove-x,
+#canvas.delete-mode .atom .atom-remove-x { opacity: 1; }
+
+/* ============================================================  BOND LINES  */
+.bond-covalent{stroke:#4fc3f7;stroke-width:3;}
+.bond-ionic{stroke:#ffb74d;stroke-width:3;}
+.bond-metallic{stroke:rgba(255,255,255,.18);stroke-width:14;stroke-linecap:round;}
+.bond-label{font-family:'Segoe UI',sans-serif;pointer-events:none;}
+
+/* ============================================================  BOND CARD (info panel)  */
+.bond-card{background:#0f172a;border:1px solid #1e3a5f;border-radius:9px;padding:9px 11px;margin-bottom:6px;}
+.bond-card-title{font-size:.83rem;font-weight:800;color:#e2e8f0;margin-bottom:3px;}
+.bond-card-pair{font-size:.7rem;color:#64748b;margin-bottom:5px;}
+.bond-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:.64rem;color:#64748b;margin-bottom:5px;}
+.bond-card-grid b{color:#cbd5e1;}
+.bond-card-desc{font-size:.67rem;color:#94a3b8;line-height:1.5;border-top:1px solid #1e293b;padding-top:5px;}
+.bond-transfer{margin-top:4px;font-size:.68rem;color:#fbbf24;background:rgba(251,191,36,.08);border-radius:5px;padding:3px 6px;}
+.bond-order-tag{margin-top:4px;font-size:.68rem;color:#93c5fd;}
+.bond-polar-note{margin-top:3px;font-size:.65rem;color:#fca5a5;padding:3px 5px;background:rgba(239,68,68,.08);border-radius:4px;}
+.bond-nc-badge{display:inline-block;margin-top:4px;padding:2px 7px;background:rgba(167,243,208,.12);border:1px solid rgba(167,243,208,.3);border-radius:10px;font-size:.6rem;color:#6ee7b7;font-weight:700;}
+
+/* ============================================================  ATOMS  */
+.atom{
+  position:absolute;width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transform:translate(-50%,-50%);
+  font-weight:800;font-size:.9rem;cursor:grab;
+  user-select:none;touch-action:none;
+  border:2px solid rgba(255,255,255,.5);
+  box-shadow:0 4px 12px rgba(0,0,0,.5);z-index:10;
+  transition:box-shadow .25s,border-color .25s;
+}
+.atom.dragging{cursor:grabbing;z-index:25;}
+
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 14px 4px var(--glow-color),0 4px 12px rgba(0,0,0,.5);}
+  50%    {box-shadow:0 0 32px 14px var(--glow-color),0 4px 12px rgba(0,0,0,.5);}
+}
+@keyframes near-pulse{
+  0%,100%{box-shadow:0 0 6px 2px var(--glow-color),0 4px 12px rgba(0,0,0,.4);}
+  50%    {box-shadow:0 0 16px 6px var(--glow-color),0 4px 12px rgba(0,0,0,.4);}
+}
+.atom.stable{border-color:#fff;animation:pulse-glow 1.3s ease-in-out infinite;}
+.atom.near-bond{animation:near-pulse 0.8s ease-in-out infinite;}
+
+.charge-label{
+  position:absolute;top:-6px;right:-8px;
+  background:#fff;color:#111;font-size:.6rem;font-weight:800;
+  border-radius:50%;min-width:17px;height:17px;
+  display:flex;align-items:center;justify-content:center;padding:0 2px;
+  box-shadow:0 0 4px rgba(0,0,0,.6);
+}
+.charge-label:empty{display:none;}
+
+/* ============================================================  DIPOLO  */
+.dipole-indicator{
+  position:absolute;transform:translate(-50%,-50%);
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:900;pointer-events:none;z-index:15;
+  text-shadow:0 0 4px rgba(0,0,0,.9);
+  margin-top:-36px; /* acima do átomo */
+}
+
+/* ============================================================  ELECTRONS  */
+.electron-orbit{position:absolute;width:0;height:0;z-index:11;pointer-events:none;}
+.electron-dot{position:absolute;width:6px;height:6px;top:-3px;left:-3px;border-radius:50%;background:#80f0ff;box-shadow:0 0 5px #80f0ff;}
+.electron-particle{position:absolute;top:0;left:0;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff,#4fc3f7);box-shadow:0 0 10px #4fc3f7;z-index:18;pointer-events:none;}
+.sea-electron{position:absolute;top:0;left:0;width:5px;height:5px;border-radius:50%;background:#ffe082;box-shadow:0 0 8px #ffe082;z-index:4;pointer-events:none;}
+
+/* ============================================================  PARTICLES  */
+.burst-particle{position:absolute;top:0;left:0;width:7px;height:7px;border-radius:50%;z-index:20;pointer-events:none;}
+.break-particle{position:absolute;top:0;left:0;width:5px;height:5px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px #ef4444;z-index:20;pointer-events:none;}
+
+/* ============================================================  3D  */
+#viewer3d{position:absolute;inset:12px;display:none;border-radius:13px;overflow:hidden;background:#060a12;border:1px solid #2a3142;}
+#viewer3d .v3d-empty{color:#5b6b86;text-align:center;margin-top:40px;font-style:italic;}
+
+/* ============================================================  RESPONSIVE  */
+@media(max-width:900px){
+  .app-container{flex-direction:column;}
+  .sidebar{width:100%;max-width:none;max-height:52vh;border-right:none;border-bottom:1px solid #2a3142;}
+  .canvas-area{width:100%;height:48vh;}
+  .pt-cell .c-name{display:none;}
+}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Interativo de Ligações Químicas — IUPAC</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-container">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <h4 class="sidebar-title">⚛️ Ligações Químicas</h4>
+    <p class="hint-text">Clique em um elemento para adicioná-lo ao canvas. A física cuida da aproximação.</p>
+
+    <!-- Abas de tipo de ligação -->
+    <ul class="nav nav-pills flex-row mb-2 bond-nav" id="bondTabs" role="tablist">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-ionica"      type="button">⚡ Iônica</button></li>
+      <li class="nav-item"><button class="nav-link"        data-bs-toggle="pill" data-bs-target="#tab-covalente"   type="button">🔗 Covalente</button></li>
+      <li class="nav-item"><button class="nav-link"        data-bs-toggle="pill" data-bs-target="#tab-metalica"    type="button">🧲 Metálica</button></li>
+    </ul>
+    <div class="tab-content" id="bondTabsContent">
+      <div class="tab-pane fade show active" id="tab-ionica">
+        <p class="bond-description">Transferência completa de e⁻ de <strong>metal</strong> para <strong>ametal</strong> (ΔEN &gt; 1,7). Forma cátions e ânions em rede cristalina. Alto ponto de fusão, conduz eletricidade no estado fundido.</p>
+      </div>
+      <div class="tab-pane fade" id="tab-covalente">
+        <p class="bond-description">Compartilhamento de pares de e⁻ (ΔEN &lt; 1,7). <strong>Simples</strong> (σ), <strong>dupla</strong> (σ+π) ou <strong>tripla</strong> (σ+2π). Polar (ΔEN ≥ 0,4) ou apolar (ΔEN &lt; 0,4). Geometria definida pelo VSEPR.</p>
+      </div>
+      <div class="tab-pane fade" id="tab-metalica">
+        <p class="bond-description">"<strong>Mar de elétrons</strong>": cátions metálicos fixos em rede com e⁻ deslocalizados. Não direcional. Explica condutividade, maleabilidade, ductilidade e brilho metálico.</p>
+      </div>
+    </div>
+
+    <!-- Busca -->
+    <div class="pt-search-bar">
+      <input type="text" id="element-search" class="pt-search-input" placeholder="🔍 Símbolo, nome ou número...">
+      <div class="pt-legend-row" id="pt-legend"></div>
+    </div>
+
+    <!-- TABELA PERIÓDICA -->
+    <div class="pt-wrapper">
+      <div class="pt-grid" id="periodic-table"></div>
+      <div class="pt-fblock-label"><span>57–71 Lantanídeos</span><span>89–103 Actinídeos</span></div>
+      <div class="pt-fblock" id="fblock-table"></div>
+    </div>
+
+    <hr class="sidebar-hr">
+
+    <!-- Controles -->
+    <div class="controls">
+      <div class="controls-row">
+        <button id="btn-reset"       class="btn btn-outline-danger  btn-sm">🔄 Limpar</button>
+        <button id="btn-delete-mode" class="btn btn-outline-danger  btn-sm">🗑️ Remover Átomo</button>
+        <button id="btn-toggle-3d"   class="btn btn-outline-info    btn-sm">🧬 Ver 3D</button>
+      </div>
+      <div class="controls-row mt-1">
+        <button id="btn-physics"   class="btn btn-warning         btn-sm">⏸ Pausar Física</button>
+        <button id="btn-snap"      class="btn btn-outline-success btn-sm">🎯 Snap Ligações</button>
+      </div>
+
+      <!-- Seletor de Ordem de Ligação -->
+      <div class="bond-order-selector">
+        <span class="bond-order-label">Ordem de ligação:</span>
+        <div class="bond-order-btns">
+          <button class="bond-order-btn active-order" data-order="auto" title="Automático — segue octeto e VSEPR">Auto</button>
+          <button class="bond-order-btn" data-order="1" title="Ligação simples (σ)">─ Simples</button>
+          <button class="bond-order-btn" data-order="2" title="Ligação dupla (σ + π)">═ Dupla</button>
+          <button class="bond-order-btn" data-order="3" title="Ligação tripla (σ + 2π)">≡ Tripla</button>
+        </div>
+        <div class="bond-edit-hint" id="bond-edit-hint" style="display:none">
+          👆 Clique sobre uma ligação no canvas para selecioná-la, depois escolha a ordem acima.
+        </div>
+        <div class="bond-order-warning" id="bond-order-warning"></div>
+        <button id="btn-bond-edit" class="btn btn-outline-info btn-sm w-100 mt-1" title="Clique numa ligação para alterar sua ordem individualmente">✏️ Editar Ligação</button>
+      </div>
+    </div>
+
+    <!-- Painel Molecular -->
+    <div class="mol-panel" id="mol-panel">
+      <div class="mol-panel-header">🧬 Molécula Ativa</div>
+      <div class="mol-formula" id="mol-formula">—</div>
+      <div class="mol-stats"   id="mol-stats"></div>
+    </div>
+
+    <!-- Gráfico de energia -->
+    <div class="energy-panel">
+      <strong>📈 Energia × Distância</strong>
+      <svg id="energy-chart" preserveAspectRatio="xMidYMid meet"></svg>
+      <p class="energy-caption" id="energy-caption">Adicione dois átomos para gerar a curva.</p>
+    </div>
+
+    <!-- Painel de informação -->
+    <div class="info-panel">
+      <strong>🧪 Análise da Ligação</strong>
+      <p id="info-text">Clique em elementos para detectar interações.</p>
+    </div>
+
+    <!-- Tooltip flutuante -->
+    <div class="el-tooltip" id="el-tooltip"></div>
+  </aside>
+
+  <!-- ===================== CANVAS ===================== -->
+  <main class="canvas-area">
+    <div id="canvas-wrapper">
+      <div id="canvas">
+        <svg id="bond-svg"></svg>
+        <div id="canvas-hint">Clique em elementos da tabela periódica para começar</div>
+        <div id="bond-edit-overlay"></div>
+      </div>
+    </div>
+    <div id="viewer3d"></div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/3dmol@2.0.4/build/3Dmol-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
