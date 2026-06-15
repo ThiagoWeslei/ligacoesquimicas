@@ -1,0 +1,1335 @@
+/* ============================================================  VARIÁVEIS DE TEMA (modo escuro padrão) */
+:root {
+  --bg-base:       #0b0f17;
+  --bg-surface:    #161b29;
+  --bg-surface2:   #1c2330;
+  --bg-surface3:   #1a2135;
+  --bg-card:       #0f172a;
+  --border-color:  #2a3142;
+  --text-primary:  #e6edf3;
+  --text-muted:    #9aa7bd;
+  --text-dim:      #94a3b8;
+  --accent:        #29b6f6;
+  --accent-dark:   #0277bd;
+  --scrollbar-thumb: #2f3a52;
+  --scrollbar-track: #11151f;
+  --font-scale:    1;       /* controlado pelo JS da barra */
+  --letter-spacing: normal; /* controlado pelo JS da barra */
+}
+
+/* ============================================================  TEMA CLARO */
+body.theme-light {
+  --bg-base:       #f0f4f8;
+  --bg-surface:    #ffffff;
+  --bg-surface2:   #e8edf5;
+  --bg-surface3:   #dde3ef;
+  --bg-card:       #f8fafc;
+  --border-color:  #c5d0e0;
+  --text-primary:  #111827;
+  --text-muted:    #4b5563;
+  --text-dim:      #6b7280;
+  --accent:        #0277bd;
+  --accent-dark:   #01579b;
+  --scrollbar-thumb: #c5d0e0;
+  --scrollbar-track: #e8edf5;
+}
+
+/* ============================================================  ALTO CONTRASTE */
+body.high-contrast {
+  --bg-base:       #000000;
+  --bg-surface:    #000000;
+  --bg-surface2:   #0a0a0a;
+  --bg-surface3:   #111111;
+  --bg-card:       #000000;
+  --border-color:  #ffff00;
+  --text-primary:  #ffffff;
+  --text-muted:    #ffff00;
+  --text-dim:      #ffff00;
+  --accent:        #ffff00;
+  --accent-dark:   #ffd600;
+}
+body.high-contrast .pt-cell {
+  border: 2px solid #ffff00 !important;
+  color: #fff !important;
+  filter: contrast(1.5) brightness(1.2);
+}
+body.high-contrast .atom {
+  border: 3px solid #ffff00 !important;
+  filter: contrast(1.5) brightness(1.2);
+}
+body.high-contrast .btn,
+body.high-contrast .bond-order-btn,
+body.high-contrast .a11y-btn {
+  border: 2px solid #ffff00 !important;
+  color: #ffff00 !important;
+}
+body.high-contrast .nav-link.active,
+body.high-contrast .bond-order-btn.active-order {
+  background: #ffff00 !important;
+  color: #000 !important;
+}
+body.high-contrast .energy-curve { stroke: #ffff00; }
+body.high-contrast .axis text   { fill: #ffff00; }
+body.high-contrast .axis-label  { fill: #ffff00; }
+
+/* ============================================================  ESPAÇAMENTO DE LETRAS */
+body.wide-spacing,
+body.wide-spacing * {
+  letter-spacing: 0.12em !important;
+  word-spacing:   0.16em !important;
+  line-height:    1.7    !important;
+}
+
+/* ============================================================  MOVIMENTO REDUZIDO (forçado pelo botão JS) */
+body.no-motion *,
+body.no-motion *::before,
+body.no-motion *::after {
+  animation-duration:       0.01ms !important;
+  animation-iteration-count: 1     !important;
+  transition-duration:      0.01ms !important;
+}
+body.no-motion .electron-orbit,
+body.no-motion .sea-electron,
+body.no-motion .burst-particle,
+body.no-motion .break-particle,
+body.no-motion .electron-particle { display: none !important; }
+body.no-motion .atom.stable,
+body.no-motion .atom.near-bond {
+  animation: none !important;
+  box-shadow: 0 0 8px 3px var(--glow-color), 0 4px 12px rgba(0,0,0,.5) !important;
+}
+
+/* ============================================================  RESET  */
+*{box-sizing:border-box;}
+html {
+  font-size: calc(16px * var(--font-scale));
+}
+html,body{
+  margin:0;height:100%;
+  font-family:'Segoe UI',Roboto,Arial,sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  transition: background .25s, color .25s;
+}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background: var(--scrollbar-thumb);border-radius:3px;}
+::-webkit-scrollbar-track{background: var(--scrollbar-track);}
+
+/* ============================================================  BARRA DE ACESSIBILIDADE */
+.a11y-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 5px 12px;
+  background: var(--bg-surface);
+  border-bottom: 2px solid var(--accent);
+  z-index: 9000;
+  position: relative;
+  font-size: .72rem;
+}
+.a11y-bar-label {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: .7rem;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+.a11y-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.a11y-bar-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--border-color);
+  flex-shrink: 0;
+}
+.a11y-btn {
+  padding: 3px 9px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface3);
+  color: var(--text-primary);
+  font-size: .7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  min-height: 28px;
+  white-space: nowrap;
+  line-height: 1;
+}
+.a11y-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.a11y-btn.active-a11y,
+.a11y-btn.active-theme {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 6px rgba(41,182,246,.4);
+}
+.a11y-btn-large {
+  font-size: .85rem;
+}
+/* Tema claro — ajusta cores do botão */
+body.theme-light .a11y-btn {
+  background: #dde3ef;
+  color: #111827;
+  border-color: #c5d0e0;
+}
+body.theme-light .a11y-btn:hover,
+body.theme-light .a11y-btn.active-a11y,
+body.theme-light .a11y-btn.active-theme {
+  background: #0277bd;
+  color: #fff;
+  border-color: #01579b;
+}
+/* Alto contraste — botão da barra */
+body.high-contrast .a11y-btn {
+  background: #000;
+  color: #ffff00;
+  border-color: #ffff00;
+}
+body.high-contrast .a11y-btn:hover,
+body.high-contrast .a11y-btn.active-a11y,
+body.high-contrast .a11y-btn.active-theme {
+  background: #ffff00;
+  color: #000;
+}
+
+/* ============================================================  ACESSIBILIDADE — UTILITÁRIOS  */
+
+/* Classe utilitária: visível apenas para leitores de tela */
+.sr-only{
+  position:absolute;
+  width:1px;height:1px;
+  padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);
+  white-space:nowrap;border:0;
+}
+
+/* Skip links — aparecem ao receber foco */
+.skip-link{
+  position:fixed;
+  top:-100px;left:16px;
+  z-index:10000;
+  background:#29b6f6;color:#000;
+  font-size:.85rem;font-weight:700;
+  padding:8px 14px;border-radius:0 0 8px 8px;
+  text-decoration:none;
+  transition:top .2s ease;
+  outline:none;
+}
+.skip-link:focus{top:0;}
+
+/* Anel de foco visível e consistente em toda a aplicação */
+:focus-visible{
+  outline:3px solid #29b6f6;
+  outline-offset:3px;
+  border-radius:4px;
+}
+
+/* Garante que elementos interativos sempre mostrem foco visível */
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible,
+.pt-cell:focus-visible,
+.nav-link:focus-visible,
+.bond-order-btn:focus-visible,
+.btn:focus-visible{
+  outline:3px solid #29b6f6 !important;
+  outline-offset:3px !important;
+}
+
+/* ============================================================  LAYOUT  */
+.app-container{display:flex;height:calc(100vh - 38px);width:100%;overflow:hidden;}
+
+.sidebar{
+  width:38%;min-width:320px;max-width:440px;
+  background: var(--bg-surface);
+  border-right:1px solid var(--border-color);
+  padding:10px 10px 14px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:0;
+  transition: background .25s, border-color .25s;
+}
+
+/* ============================================================  BOND NAV  */
+.bond-nav{gap:4px;flex-wrap:wrap;}
+.bond-nav .nav-link{
+  color: var(--text-primary);
+  background: var(--bg-surface3);
+  border-radius:6px;
+  font-size:.72rem;font-weight:600;
+  border:1px solid var(--border-color);
+  transition:all .2s;padding:4px 8px;white-space:nowrap;
+}
+.bond-nav .nav-link:hover{background: var(--bg-surface2);}
+.bond-nav .nav-link.active{
+  background:linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color:#fff;border-color:transparent;
+}
+.bond-nav .nav-link[aria-selected="true"]::after{
+  content:'';display:block;height:2px;background:#fff;border-radius:1px;margin-top:3px;
+}
+.bond-description{
+  font-size:.7rem;color: var(--text-muted);
+  background: var(--bg-surface2);
+  border-left:3px solid var(--accent);
+  padding:6px 9px;border-radius:5px;margin:6px 0 4px;line-height:1.45;
+}
+
+/* ============================================================  SEARCH  */
+.pt-search-bar{margin:6px 0 5px;}
+.pt-search-input{
+  width:100%;padding:5px 10px;border-radius:7px;
+  border:1px solid var(--border-color);
+  background: var(--bg-surface3);
+  color: var(--text-primary);
+  font-size:.78rem;outline:none;transition:border-color .2s;
+}
+.pt-search-input:focus{border-color: var(--accent);}
+.pt-search-input::placeholder{color: var(--text-dim); opacity:.7;}
+.pt-legend-row{display:flex;flex-wrap:wrap;gap:3px 7px;margin-top:6px;font-size:.58rem;color: var(--text-dim);}
+.pt-legend-item{
+  display:flex;align-items:center;gap:3px;
+  cursor:pointer;transition:opacity .2s;
+  min-height:24px;padding:2px 4px;border-radius:4px;
+}
+.pt-legend-item:hover{background:rgba(41,182,246,.12);}
+.pt-legend-item:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.pt-legend-dot{width:8px;height:8px;border-radius:2px;border:1px solid rgba(255,255,255,.2);flex-shrink:0;}
+.pt-legend-item.dimmed{opacity:.3;}
+
+/* ============================================================  PERIODIC TABLE  */
+.pt-wrapper{margin:2px 0 4px;}
+.pt-grid{display:grid;grid-template-columns:repeat(18,1fr);gap:2px;width:100%;}
+.pt-fblock-label{
+  display:grid;grid-template-columns:1fr 1fr;
+  font-size:.5rem;color: var(--text-dim);
+  padding:2px 0 1px 0;gap:2px;
+}
+.pt-fblock-label span{text-align:center;}
+.pt-fblock{
+  display:grid;grid-template-columns:repeat(15,1fr);
+  gap:2px;width:100%;
+  padding-left:calc(2*(100%/18 + 2px));
+}
+
+.pt-cell{
+  aspect-ratio:1;border-radius:3px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,.15);
+  transition:transform .12s,box-shadow .12s,opacity .2s;
+  user-select:none;position:relative;min-width:0;overflow:hidden;
+  outline:none;
+}
+.pt-cell:hover{
+  transform:scale(1.28);
+  box-shadow:0 0 12px 2px rgba(255,255,255,.35);
+  z-index:20;border-color:rgba(255,255,255,.75);
+}
+.pt-cell:focus-visible{
+  transform:scale(1.28);
+  box-shadow:0 0 0 3px var(--accent), 0 0 12px 2px rgba(41,182,246,.5) !important;
+  z-index:20;border-color: var(--accent) !important;
+}
+.pt-cell:active{transform:scale(1.12);}
+.pt-cell.dimmed{opacity:.15;}
+.pt-cell.highlighted{opacity:1!important;box-shadow:0 0 8px 2px var(--accent);border-color: var(--accent);}
+.pt-cell .c-num{font-size:.44rem;line-height:1;opacity:.7;font-weight:400;}
+.pt-cell .c-sym{font-size:.72rem;line-height:1.05;font-weight:800;}
+.pt-cell .c-name{font-size:.37rem;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.pt-spacer{aspect-ratio:1;}
+
+/* ============================================================  TOOLTIP  */
+.el-tooltip{
+  display:none;position:fixed;z-index:999;
+  background: var(--bg-surface);
+  border:1px solid var(--accent);border-radius:8px;
+  padding:8px 11px;font-size:.72rem;color: var(--text-primary);
+  pointer-events:none;max-width:185px;
+  box-shadow:0 4px 20px rgba(0,0,0,.6);line-height:1.5;
+}
+.el-tooltip strong{font-size:.85rem;}
+.el-tooltip .tt-cat{font-size:.6rem;opacity:.7;margin-top:2px;}
+
+/* ============================================================  CONTROLS  */
+.controls-row{display:flex;gap:6px;}
+.controls-row .btn{
+  flex:1;font-weight:600;font-size:.75rem;padding:4px 6px;
+  min-height:36px;
+}
+/* Botão freeze geometria */
+#btn-freeze-geo.active-a11y {
+  background: linear-gradient(135deg,#065f46,#10b981);
+  color: #fff;
+  border-color: #10b981;
+  box-shadow: 0 0 8px rgba(16,185,129,.4);
+}
+body.theme-light #btn-freeze-geo { color: #374151; border-color: #9ca3af; }
+
+/* Botão wedge / ângulos */
+#btn-wedge-toggle.active-a11y,
+#btn-show-angles.active-a11y {
+  background: linear-gradient(135deg,#4a1d96,#7c3aed);
+  color: #fff;
+  border-color: #7c3aed;
+  box-shadow: 0 0 8px rgba(124,58,237,.4);
+}
+body.theme-light #btn-wedge-toggle,
+body.theme-light #btn-show-angles {
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+/* ============================================================  PAINEL MOLECULAR  */
+.mol-panel{
+  background: var(--bg-card);
+  border:1px solid var(--accent);border-radius:10px;
+  padding:8px 11px;margin:8px 0;
+}
+.mol-panel-header{font-size:.72rem;font-weight:700;color: var(--accent);margin-bottom:4px;}
+.mol-formula{
+  font-size:1.1rem;font-weight:800;letter-spacing:.5px;
+  color: var(--text-primary);margin-bottom:6px;line-height:1.3;
+}
+.mol-stats{
+  display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.68rem;color: var(--text-dim);
+}
+.mol-stats span{display:flex;align-items:center;gap:3px;}
+.mol-stats b{color: var(--text-primary);}
+
+/* ============================================================  ENERGY PANEL  */
+.energy-panel{
+  background: var(--bg-surface2);border:1px solid var(--border-color);
+  border-radius:9px;padding:7px 9px;margin-bottom:10px;
+}
+.energy-panel strong{font-size:.78rem;color: var(--text-primary);}
+#energy-chart{width:100%;height:auto;display:block;margin-top:4px;}
+.energy-caption{font-size:.67rem;color: var(--text-dim);margin:4px 0 0;text-align:center;}
+.energy-curve{fill:none;stroke: var(--accent);stroke-width:2;}
+.energy-marker{fill:#ffb74d;stroke:#fff;stroke-width:1;}
+.min-marker{stroke:#69f0ae;stroke-width:1;stroke-dasharray:3 3;}
+.min-label{fill:#69f0ae;font-size:8px;}
+.energy-empty{fill: var(--text-dim);font-size:9px;}
+.axis path,.axis line{stroke: var(--border-color);}
+.axis text{fill: var(--text-dim);font-size:7px;}
+.axis-label{fill: var(--text-dim);font-size:8px;text-anchor:middle;}
+
+/* ============================================================  INFO PANEL  */
+.info-panel{
+  background: var(--bg-surface2);border:1px solid var(--border-color);
+  border-radius:9px;padding:7px 9px;margin-bottom:10px;
+}
+.info-panel strong{font-size:.78rem;color: var(--text-primary);}
+#info-text{font-size:.73rem;color: var(--text-primary);margin:5px 0 0;line-height:1.45;}
+.iupac-note{
+  display:block;margin-top:5px;padding:5px 7px;
+  background:rgba(41,182,246,.1);border-left:2px solid var(--accent);
+  border-radius:0 5px 5px 0;font-size:.67rem;color: var(--text-muted);line-height:1.4;
+}
+
+/* ============================================================  CANVAS  */
+.canvas-area{flex:1;position:relative;padding:12px;display:flex;flex-direction:column;min-width:0;}
+#canvas-wrapper{flex:1;position:relative;border-radius:13px;overflow:hidden;}
+#canvas{
+  position:absolute;inset:0;
+  background-color: var(--bg-base);
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:32px 32px;
+  border:2px dashed transparent;border-radius:13px;overflow:hidden;
+  transition:border-color .25s,background-color .25s;
+}
+body.theme-light #canvas {
+  background-image:linear-gradient(rgba(0,0,0,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.05) 1px,transparent 1px);
+}
+#canvas.drop-active{border-color: var(--accent);background-color:rgba(41,182,246,.08);box-shadow:inset 0 0 40px rgba(41,182,246,.15);}
+#canvas-hint{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  color: var(--text-dim);font-size:.95rem;text-align:center;width:60%;
+  pointer-events:none;font-style:italic;opacity:.6;
+}
+#canvas-hint.hidden{display:none;}
+#bond-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+
+.bond-edit-hint{
+  font-size:.65rem;color: var(--text-dim);
+  background:rgba(41,182,246,.08);border:1px solid rgba(41,182,246,.25);
+  border-radius:5px;padding:4px 7px;margin-top:5px;line-height:1.4;
+}
+#canvas.bond-edit-mode{cursor:crosshair!important;}
+#canvas.bond-edit-mode .atom{pointer-events:none;}
+
+/* Overlay transparente que captura cliques de ligação no modo edição */
+#bond-edit-overlay{
+  display:none;position:absolute;inset:0;
+  z-index:15;cursor:crosshair;background:transparent;
+}
+
+/* ============================================================  BOND ORDER SELECTOR  */
+.bond-order-selector{
+  margin-top:8px;
+  background: var(--bg-surface3);
+  border:1px solid var(--border-color);
+  border-top:1px solid var(--border-color);
+  border-radius:8px;
+  padding:7px 10px;
+}
+.bond-order-label{
+  font-size:.68rem;
+  color: var(--text-dim);
+  font-weight:600;
+  display:block;
+  margin-bottom:5px;
+  letter-spacing:.3px;
+  padding:0;float:none;width:auto;
+}
+.bond-order-btns{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
+}
+.bond-order-btn{
+  padding:5px 4px;border-radius:6px;
+  border:1px solid var(--border-color);
+  background: var(--bg-surface2);
+  color: var(--text-dim);
+  font-size:.7rem;font-weight:700;cursor:pointer;transition:all .15s;
+  text-align:center;white-space:nowrap;min-height:36px;
+}
+.bond-order-btn:hover{background: var(--bg-surface);color: var(--text-primary);border-color: var(--accent);}
+.bond-order-btn.active-order{
+  background:linear-gradient(135deg, var(--accent-dark), var(--accent));
+  color:#fff;border-color:transparent;
+  box-shadow:0 0 8px rgba(41,182,246,.4);
+}
+.bond-order-btn[data-order="1"].active-order{background:linear-gradient(135deg,#0277bd,#29b6f6);}
+.bond-order-btn[data-order="2"].active-order{background:linear-gradient(135deg,#7c3aed,#a78bfa);}
+.bond-order-btn[data-order="3"].active-order{background:linear-gradient(135deg,#b45309,#fbbf24);}
+
+.bond-order-warning{
+  display:none;
+  margin-top:5px;padding:4px 7px;
+  background:rgba(239,68,68,.15);
+  border:1px solid rgba(239,68,68,.4);
+  border-radius:5px;
+  font-size:.65rem;color:#fca5a5;
+  line-height:1.35;
+}
+
+/* ============================================================  DELETE MODE  */
+#canvas.delete-mode{cursor:crosshair!important;}
+#canvas.delete-mode .atom{cursor:pointer!important;border-color:#ef4444!important;}
+#canvas.delete-mode .atom:hover{
+  box-shadow:0 0 0 3px #ef4444,0 0 20px 6px rgba(239,68,68,.5)!important;
+  transform:translate(-50%,-50%) scale(1.1);
+}
+
+/* × button inside atom */
+.atom-remove-x{
+  position:absolute;top:-8px;right:-8px;
+  width:18px;height:18px;
+  background:#ef4444;color:#fff;
+  border-radius:50%;font-size:.72rem;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .15s;
+  pointer-events:none;
+  box-shadow:0 0 5px rgba(0,0,0,.5);line-height:1;
+}
+.atom:hover .atom-remove-x,
+#canvas.delete-mode .atom .atom-remove-x{opacity:1;}
+
+/* ============================================================  BOND LINES  */
+.bond-covalent{stroke:#4fc3f7;stroke-width:3;}
+.bond-ionic{stroke:#ffb74d;stroke-width:3;}
+.bond-metallic{stroke:rgba(255,255,255,.18);stroke-width:14;stroke-linecap:round;}
+.bond-label{font-family:'Segoe UI',sans-serif;pointer-events:none;}
+
+/* ── Cunhas (wedge bonds) ── notação estereoquímica da literatura ── */
+/* Linha plana normal — no plano do papel */
+.bond-plane { stroke:#4fc3f7; stroke-width:3; }
+
+/* Cunha sólida — ligação saindo do plano (vem para frente).
+   Desenhada como path preenchido (triângulo), não linha. */
+.bond-wedge-solid { fill:#4fc3f7; stroke:none; }
+
+/* Cunha tracejada — ligação entrando no plano (vai para trás).
+   Série de traços perpendiculares ao eixo da ligação, mais
+   largos na ponta distal (perspectiva). */
+.bond-wedge-dash { stroke:#4fc3f7; stroke-linecap:round; fill:none; }
+
+/* Ângulo de ligação — label no canvas */
+.bond-angle-label {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 9px;
+  fill: #fbbf24;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke fill;
+  stroke: var(--bg-base);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+body.theme-light .bond-angle-label { fill: #92400e; stroke: #f0f4f8; }
+body.high-contrast .bond-angle-label { fill: #ffff00; stroke: #000; }
+
+/* ============================================================  BOND CARD  */
+.bond-card{background:#0f172a;border:1px solid #1e3a5f;border-radius:9px;padding:9px 11px;margin-bottom:6px;}
+.bond-card-title{font-size:.83rem;font-weight:800;color:#e2e8f0;margin-bottom:3px;}
+.bond-card-pair{font-size:.7rem;color:#64748b;margin-bottom:5px;}
+.bond-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:.64rem;color:#64748b;margin-bottom:5px;}
+.bond-card-grid b{color:#cbd5e1;}
+.bond-card-desc{font-size:.67rem;color:#94a3b8;line-height:1.5;border-top:1px solid #1e293b;padding-top:5px;}
+.bond-transfer{margin-top:4px;font-size:.68rem;color:#fbbf24;background:rgba(251,191,36,.08);border-radius:5px;padding:3px 6px;}
+.bond-order-tag{margin-top:4px;font-size:.68rem;color:#93c5fd;}
+.bond-polar-note{margin-top:3px;font-size:.65rem;color:#fca5a5;padding:3px 5px;background:rgba(239,68,68,.08);border-radius:4px;}
+.bond-nc-badge{display:inline-block;margin-top:4px;padding:2px 7px;background:rgba(167,243,208,.12);border:1px solid rgba(167,243,208,.3);border-radius:10px;font-size:.6rem;color:#6ee7b7;font-weight:700;}
+
+/* ============================================================  ATOMS  */
+.atom{
+  position:absolute;width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transform:translate(-50%,-50%);
+  font-weight:800;font-size:.9rem;cursor:grab;
+  user-select:none;touch-action:none;
+  border:2px solid rgba(255,255,255,.5);
+  box-shadow:0 4px 12px rgba(0,0,0,.5);z-index:10;
+  transition:box-shadow .25s,border-color .25s;
+}
+.atom.dragging{cursor:grabbing;z-index:25;}
+/* Foco visível nos átomos (navegação por teclado) */
+.atom:focus-visible{
+  outline:3px solid #fff !important;
+  outline-offset:5px !important;
+}
+
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 14px 4px var(--glow-color),0 4px 12px rgba(0,0,0,.5);}
+  50%    {box-shadow:0 0 32px 14px var(--glow-color),0 4px 12px rgba(0,0,0,.5);}
+}
+@keyframes near-pulse{
+  0%,100%{box-shadow:0 0 6px 2px var(--glow-color),0 4px 12px rgba(0,0,0,.4);}
+  50%    {box-shadow:0 0 16px 6px var(--glow-color),0 4px 12px rgba(0,0,0,.4);}
+}
+.atom.stable{border-color:#fff;animation:pulse-glow 1.3s ease-in-out infinite;}
+.atom.near-bond{animation:near-pulse 0.8s ease-in-out infinite;}
+
+.charge-label{
+  position:absolute;top:-6px;right:-8px;
+  background:#fff;color:#111;font-size:.6rem;font-weight:800;
+  border-radius:50%;min-width:17px;height:17px;
+  display:flex;align-items:center;justify-content:center;padding:0 2px;
+  box-shadow:0 0 4px rgba(0,0,0,.6);
+}
+.charge-label:empty{display:none;}
+
+/* ============================================================  DIPOLO  */
+.dipole-indicator{
+  position:absolute;transform:translate(-50%,-50%);
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:900;pointer-events:none;z-index:15;
+  text-shadow:0 0 4px rgba(0,0,0,.9);
+  margin-top:-36px;
+}
+
+/* ============================================================  ELECTRONS  */
+.electron-orbit{position:absolute;width:0;height:0;z-index:11;pointer-events:none;}
+.electron-dot{position:absolute;width:6px;height:6px;top:-3px;left:-3px;border-radius:50%;background:#80f0ff;box-shadow:0 0 5px #80f0ff;}
+.electron-particle{position:absolute;top:0;left:0;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff,#4fc3f7);box-shadow:0 0 10px #4fc3f7;z-index:18;pointer-events:none;}
+.sea-electron{position:absolute;top:0;left:0;width:5px;height:5px;border-radius:50%;background:#ffe082;box-shadow:0 0 8px #ffe082;z-index:4;pointer-events:none;}
+
+/* ============================================================  PARTICLES  */
+.burst-particle{position:absolute;top:0;left:0;width:7px;height:7px;border-radius:50%;z-index:20;pointer-events:none;}
+.break-particle{position:absolute;top:0;left:0;width:5px;height:5px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px #ef4444;z-index:20;pointer-events:none;}
+
+/* ============================================================  3D  */
+#viewer3d{position:absolute;inset:12px;display:none;border-radius:13px;overflow:hidden;background:#060a12;border:1px solid #2a3142;}
+#viewer3d .v3d-empty{color:#5b6b86;text-align:center;margin-top:40px;font-style:italic;}
+
+/* ============================================================  VLIBRAS — posicionamento do widget  */
+[vw]{
+  /* O VLibras posiciona o widget no canto inferior direito por padrão.
+     Ajuste abaixo para não sobrepor controles críticos da UI. */
+  bottom:20px !important;
+  right:20px !important;
+}
+
+/* ============================================================  MOVIMENTO REDUZIDO  */
+/*
+  Respeita a preferência do sistema operacional por redução de animações.
+  Desativa ou suaviza todas as animações para usuários com vestibular disorders,
+  epilepsia fotossensível ou preferências de acessibilidade.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,::before,::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+  .atom.stable,
+  .atom.near-bond{
+    animation:none !important;
+    box-shadow:0 0 8px 3px var(--glow-color),0 4px 12px rgba(0,0,0,.5) !important;
+  }
+  .electron-orbit{display:none !important;}
+  .sea-electron{display:none !important;}
+  .burst-particle,.break-particle,.electron-particle{display:none !important;}
+}
+
+/* ============================================================  ALTO CONTRASTE  */
+/*
+  Suporte ao modo de alto contraste do Windows e preferências de contraste forçado.
+  Garante que bordas e textos sejam visíveis em qualquer esquema de cores do sistema.
+*/
+@media (forced-colors: active) {
+  .pt-cell{
+    border:2px solid ButtonText !important;
+    forced-color-adjust:none;
+  }
+  .pt-cell:focus-visible{
+    outline:3px solid Highlight !important;
+  }
+  .atom{
+    border:3px solid ButtonText !important;
+  }
+  .btn{
+    border:2px solid ButtonText !important;
+  }
+  .bond-order-btn.active-order{
+    border:3px solid Highlight !important;
+  }
+  .skip-link{
+    background:Highlight !important;
+    color:HighlightText !important;
+  }
+}
+
+/* ============================================================  SIDEBAR HEADER  */
+.sidebar-header { margin-bottom: 4px; }
+.sidebar-title{
+  margin:0 0 2px;
+  font-weight:800;letter-spacing:.4px;font-size:1rem;
+  color: var(--text-primary);
+}
+.hint-text{font-size:.7rem;color: var(--text-muted);margin-bottom:6px;line-height:1.4;}
+.sidebar-hr{border-color: var(--border-color);margin:8px 0;}
+
+/* ============================================================  ACCORDION UNIFICADO  */
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.acc-panel {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface2);
+  transition: border-color .2s, box-shadow .2s;
+}
+.acc-panel:has(.acc-header[aria-expanded="true"]) {
+  border-color: rgba(41,182,246,.4);
+  box-shadow: 0 0 0 1px rgba(41,182,246,.12);
+}
+
+/* Header do accordion — botão completo */
+.acc-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: .8rem;
+  font-weight: 700;
+  text-align: left;
+  transition: background .15s, color .15s;
+  border-radius: 10px;
+  user-select: none;
+}
+.acc-header:hover {
+  background: rgba(41,182,246,.08);
+  color: var(--accent);
+}
+.acc-header[aria-expanded="true"] {
+  background: linear-gradient(135deg, rgba(41,182,246,.14), rgba(41,182,246,.05));
+  color: var(--accent);
+  border-radius: 10px 10px 0 0;
+  border-bottom: 1px solid rgba(41,182,246,.2);
+}
+.acc-header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+
+/* Ícone emoji do painel */
+.acc-icon {
+  font-size: .95rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Label do painel */
+.acc-label {
+  flex: 1;
+  letter-spacing: .2px;
+}
+
+/* Badge numérico opcional */
+.acc-badge {
+  font-size: .6rem;
+  font-weight: 700;
+  background: rgba(41,182,246,.2);
+  color: var(--accent);
+  border-radius: 10px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.acc-header[aria-expanded="true"] .acc-badge {
+  background: rgba(41,182,246,.35);
+}
+
+/* Chevron SVG — rotaciona suavemente */
+.acc-chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform .22s cubic-bezier(.4,0,.2,1);
+  color: var(--text-dim);
+}
+.acc-header[aria-expanded="true"] .acc-chevron {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+/* Body do accordion — animação de altura */
+.acc-body {
+  padding: 0 11px 10px;
+  overflow: hidden;
+  /* Transição de max-height para animação suave */
+  max-height: 2000px;
+  transition: max-height .3s cubic-bezier(.4,0,.2,1),
+              padding .25s ease,
+              opacity .25s ease;
+  opacity: 1;
+}
+.acc-body.collapsed {
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Grupos dentro do painel Controles ── */
+.ctrl-group {
+  margin-top: 10px;
+}
+.ctrl-group:first-child { margin-top: 6px; }
+.ctrl-group-label {
+  font-size: .62rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 5px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ============================================================  PAINEL DE LIGAÇÕES — abas por tipo  */
+
+/* Abas de tipo (Covalente / Iônica / Metálica) */
+.bond-type-tabs {
+  display: flex;
+  gap: 3px;
+  margin: 8px 0 6px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid var(--border-color);
+}
+.bond-type-tab {
+  flex: 1;
+  padding: 5px 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: .68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+  text-align: center;
+  min-height: 30px;
+}
+.bond-type-tab:hover {
+  background: var(--bg-surface2);
+  color: var(--text-primary);
+}
+.bond-type-tab.active-bond-tab {
+  background: var(--bg-surface);
+  color: var(--accent);
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.bond-type-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Painéis de conteúdo por tipo */
+.bond-tab-panel { padding-top: 2px; }
+.bond-tab-panel.hidden { display: none; }
+
+/* Descrição textual do tipo de ligação */
+.bond-type-desc {
+  font-size: .7rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+}
+.bond-type-desc strong { color: var(--text-primary); }
+
+/* Grid de propriedades (Iônica / Metálica) */
+.bond-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.bond-info-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  padding: 6px 8px;
+}
+.bond-info-label {
+  font-size: .58rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 2px;
+}
+.bond-info-value {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Seção de edição */
+.bond-edit-section { margin: 8px 0 6px; }
+
+/* Nota educacional no rodapé da aba */
+.bond-type-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: .65rem;
+  color: var(--text-dim);
+  background: rgba(41,182,246,.06);
+  border: 1px solid rgba(41,182,246,.18);
+  border-radius: 6px;
+  padding: 6px 8px;
+  line-height: 1.45;
+  margin-top: 8px;
+}
+.bond-type-note-icon { flex-shrink: 0; font-size: .85rem; }
+
+/* Alto contraste */
+body.high-contrast .bond-type-tab.active-bond-tab { background: #000; color: #ffff00; box-shadow: 0 0 0 2px #ffff00; }
+body.high-contrast .bond-info-item { border-color: #ffff00; }
+body.high-contrast .bond-type-note { border-color: #ffff00; background: #000; }
+
+/* ============================================================  MÓDULOS DE LIGAÇÃO — controles por tipo  */
+
+/* Botão de ativação de modo exclusivo */
+.bond-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  margin: 8px 0 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: .75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .18s;
+  text-align: left;
+}
+.bond-mode-btn:hover {
+  border-color: var(--accent);
+  background: rgba(41,182,246,.08);
+  color: var(--accent);
+}
+.bond-mode-btn[aria-pressed="true"] {
+  background: rgba(41,182,246,.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(41,182,246,.2);
+}
+.bond-mode-btn[aria-pressed="true"]::after {
+  content: ' ✓ ativo';
+  font-size: .65rem;
+  font-weight: 600;
+  opacity: .8;
+  margin-left: auto;
+}
+.bond-mode-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Dot colorido no botão de modo */
+.bond-mode-btn-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.bond-mode-dot--cov { background: #4fc3f7; box-shadow: 0 0 6px #4fc3f7; }
+.bond-mode-dot--ion { background: #ffb74d; box-shadow: 0 0 6px #ffb74d; }
+.bond-mode-dot--met { background: #fde68a; box-shadow: 0 0 6px #fde68a; }
+
+/* Modo ativo por tipo — cor do painel */
+.acc-panel--covalente .bond-mode-btn[aria-pressed="true"] {
+  border-color: #4fc3f7;
+  background: rgba(79,195,247,.12);
+  color: #4fc3f7;
+  box-shadow: 0 0 0 3px rgba(79,195,247,.2);
+}
+.acc-panel--ionica .bond-mode-btn[aria-pressed="true"] {
+  border-color: #ffb74d;
+  background: rgba(255,183,77,.12);
+  color: #ffb74d;
+  box-shadow: 0 0 0 3px rgba(255,183,77,.2);
+}
+.acc-panel--metalica .bond-mode-btn[aria-pressed="true"] {
+  border-color: #fde68a;
+  background: rgba(253,230,138,.12);
+  color: #a87e00;
+  box-shadow: 0 0 0 3px rgba(253,230,138,.2);
+}
+
+/* Seção de interações do canvas */
+.bond-interactions {
+  margin: 10px 0 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.bond-interactions-label {
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-dim);
+  padding: 5px 10px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+.bond-interactions .bond-order-selector {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--border-color);
+}
+.bond-interactions .btn {
+  border-radius: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 0 !important;
+}
+
+/* Hint de modo iônico/metálico */
+.bond-ionic-hint {
+  font-size: .68rem;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  line-height: 1.5;
+}
+.bond-ionic-hint strong { color: var(--text-primary); }
+
+/* Grade de pares/metais recomendados */
+.bond-ionic-pairs { padding: 0 10px 10px; }
+.bond-ionic-pair-label {
+  font-size: .58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--text-dim);
+  margin-bottom: 5px;
+}
+.bond-ionic-pairs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ion-pair-chip {
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(255,183,77,.12);
+  color: #ffb74d;
+  border: 1px solid rgba(255,183,77,.3);
+  cursor: default;
+}
+.ion-pair-chip--met {
+  background: rgba(253,230,138,.1);
+  color: #a87e00;
+  border-color: rgba(253,230,138,.35);
+}
+body.theme-light .ion-pair-chip--met { color: #78590a; }
+
+/* ── Indicador de modo ativo no canvas ── */
+.bond-mode-indicator {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 10px;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+  border: 1.5px solid;
+  box-shadow: 0 2px 12px rgba(0,0,0,.4);
+  white-space: nowrap;
+  pointer-events: auto;
+  transition: opacity .2s;
+}
+.bond-mode-indicator.hidden { display: none; }
+.bond-mode-indicator.mode--covalent {
+  background: rgba(79,195,247,.18);
+  border-color: rgba(79,195,247,.6);
+  color: #4fc3f7;
+}
+.bond-mode-indicator.mode--ionic {
+  background: rgba(255,183,77,.18);
+  border-color: rgba(255,183,77,.6);
+  color: #ffb74d;
+}
+.bond-mode-indicator.mode--metallic {
+  background: rgba(253,230,138,.18);
+  border-color: rgba(253,230,138,.6);
+  color: #a87e00;
+}
+body.theme-light .bond-mode-indicator.mode--metallic { color: #78590a; }
+#bond-mode-indicator-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: .75rem;
+  padding: 0 0 0 4px;
+  opacity: .7;
+  line-height: 1;
+  transition: opacity .15s;
+}
+#bond-mode-indicator-clear:hover { opacity: 1; }
+
+/* Borda do canvas muda de acordo com o modo ativo */
+#canvas.mode-covalent  { border-color: rgba(79,195,247,.5) !important; }
+#canvas.mode-ionic     { border-color: rgba(255,183,77,.5) !important; }
+#canvas.mode-metallic  { border-color: rgba(253,230,138,.5) !important; }
+
+/* Cores de destaque por tipo de ligação nos painéis */
+.acc-panel--covalente:has(.acc-header[aria-expanded="true"]) {
+  border-color: rgba(79,195,247,.45);
+  box-shadow: 0 0 0 1px rgba(79,195,247,.15);
+}
+.acc-panel--ionica:has(.acc-header[aria-expanded="true"]) {
+  border-color: rgba(255,183,77,.45);
+  box-shadow: 0 0 0 1px rgba(255,183,77,.15);
+}
+.acc-panel--metalica:has(.acc-header[aria-expanded="true"]) {
+  border-color: rgba(253,230,138,.45);
+  box-shadow: 0 0 0 1px rgba(253,230,138,.15);
+}
+
+/* Badges coloridos por tipo */
+.acc-badge--cov { background: rgba(79,195,247,.2);  color: #4fc3f7; }
+.acc-badge--ion { background: rgba(255,183,77,.2);  color: #ffb74d; }
+.acc-badge--met { background: rgba(253,230,138,.2); color: #fde68a; }
+
+/* Variante de nota com tom de aviso */
+.bond-type-note--warning {
+  background: rgba(255,183,77,.08);
+  border-color: rgba(255,183,77,.3);
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+
+/* ============================================================  PAINEL DE MOLÉCULAS PRÉ-MONTADAS  */
+#mol-presets-section { margin: 4px 0; }
+
+.mol-preset-search-wrap { margin: 8px 0 6px; }
+
+/* Abas de categoria */
+.mol-cat-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 7px;
+}
+.mol-cat-btn {
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface3);
+  color: var(--text-dim);
+  font-size: .63rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  min-height: 24px;
+}
+.mol-cat-btn:hover { background: var(--bg-surface); color: var(--text-primary); border-color: var(--accent); }
+.mol-cat-btn.active-cat {
+  background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+  color: #fff;
+  border-color: transparent;
+}
+.mol-cat-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Grid de cards de molécula */
+.mol-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.mol-preset-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 5px 5px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: all .15s;
+  min-height: 68px;
+  position: relative;
+  overflow: hidden;
+}
+.mol-preset-card:hover {
+  border-color: var(--accent);
+  background: linear-gradient(135deg,rgba(41,182,246,.12),rgba(41,182,246,.04));
+  transform: scale(1.03);
+  z-index: 2;
+  box-shadow: 0 0 10px rgba(41,182,246,.25);
+}
+.mol-preset-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+.mol-preset-card:active { transform: scale(0.97); }
+
+/* Mini-diagrama SVG dentro do card */
+.mol-card-svg { width: 52px; height: 36px; flex-shrink: 0; }
+.mol-card-formula { font-size: .68rem; font-weight: 800; color: var(--text-primary); text-align: center; line-height: 1.1; letter-spacing: .3px; }
+.mol-card-name { font-size: .55rem; color: var(--text-dim); text-align: center; line-height: 1.2; }
+.mol-card-geo { font-size: .5rem; color: var(--accent); font-weight: 600; text-align: center; opacity: .85; }
+.mol-preset-empty { grid-column: 1/-1; text-align: center; color: var(--text-dim); font-size: .72rem; padding: 16px 0; font-style: italic; }
+
+/* Alto contraste */
+body.high-contrast .mol-preset-card { border: 2px solid #ffff00 !important; }
+body.high-contrast .mol-preset-card:hover { background: #111 !important; }
+body.high-contrast .mol-cat-btn.active-cat { background: #ffff00 !important; color: #000 !important; }
+body.high-contrast .acc-panel { border-color: #ffff00 !important; }
+body.high-contrast .acc-header[aria-expanded="true"] { color: #ffff00 !important; }
+
+
+
+/* Fórmula da molécula */
+.mol-card-formula {
+  font-size: .68rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.1;
+  letter-spacing: .3px;
+}
+
+/* Nome comum */
+.mol-card-name {
+  font-size: .55rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Badge de geometria */
+.mol-card-geo {
+  font-size: .5rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-align: center;
+  opacity: .85;
+}
+
+/* Sem resultados */
+.mol-preset-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: .72rem;
+  padding: 16px 0;
+  font-style: italic;
+}
+
+/* Alto contraste */
+body.high-contrast .mol-preset-card { border: 2px solid #ffff00 !important; }
+body.high-contrast .mol-preset-card:hover { background: #111 !important; }
+body.high-contrast .mol-cat-btn.active-cat { background: #ffff00 !important; color: #000 !important; }
+
+/* ============================================================  RESPONSIVE  */
+@media(max-width:900px){
+  .app-container{flex-direction:column;height:calc(100vh - 38px);}
+  .sidebar{
+    width:100%;max-width:none;max-height:52vh;
+    border-right:none;border-bottom:1px solid var(--border-color);
+    padding:8px 8px 10px;
+  }
+  .canvas-area{width:100%;height:48vh;}
+  .pt-cell .c-name{display:none;}
+  .acc-header { padding: 7px 9px; font-size: .76rem; }
+  .a11y-bar{ padding:4px 8px; gap:3px 5px; }
+  .a11y-bar-label{display:none;}
+  .a11y-btn{ padding:3px 6px; font-size:.65rem; }
+}
+
+/* Touch devices */
+@media (pointer: coarse) {
+  .pt-cell{ min-width:28px; min-height:28px; }
+  .bond-order-btn, .controls-row .btn{ min-height:44px; }
+  .acc-header { min-height: 44px; }
+  .mol-cat-btn { min-height: 34px; }
+  .a11y-btn{ min-height:40px; padding:6px 10px; }
+}

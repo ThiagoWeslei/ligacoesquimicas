@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Interativo de Ligações Químicas — IUPAC</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===================== SKIP LINKS ===================== -->
+  <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+  <a href="#canvas" class="skip-link">Pular para o Canvas de Simulação</a>
+
+  <!-- ===================== VLIBRAS ===================== -->
+  <div vw class="enabled" aria-hidden="true">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper>
+      <div class="vw-plugin-top-wrapper"></div>
+    </div>
+  </div>
+
+  <!-- Live regions para leitores de tela -->
+  <div id="a11y-announcer" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+  <div id="a11y-announcer-assertive" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <!-- ===================== BARRA DE ACESSIBILIDADE ===================== -->
+  <nav class="a11y-bar" role="navigation" aria-label="Barra de acessibilidade">
+    <span class="a11y-bar-label" aria-hidden="true">Acessibilidade</span>
+    <div class="a11y-bar-group" role="group" aria-label="Tamanho da fonte">
+      <button id="btn-font-decrease" class="a11y-btn" aria-label="Diminuir fonte" title="Diminuir fonte">A−</button>
+      <button id="btn-font-reset"    class="a11y-btn" aria-label="Fonte padrão"   title="Fonte padrão">A</button>
+      <button id="btn-font-increase" class="a11y-btn" aria-label="Aumentar fonte" title="Aumentar fonte">A+</button>
+    </div>
+    <span class="a11y-bar-divider" aria-hidden="true"></span>
+    <div class="a11y-bar-group" role="group" aria-label="Tema">
+      <button id="btn-theme-dark"  class="a11y-btn active-theme" aria-label="Tema escuro (ativo)" aria-pressed="true"  title="Tema escuro">🌙 Escuro</button>
+      <button id="btn-theme-light" class="a11y-btn"              aria-label="Tema claro"           aria-pressed="false" title="Tema claro">☀️ Claro</button>
+    </div>
+    <span class="a11y-bar-divider" aria-hidden="true"></span>
+    <button id="btn-contrast"     class="a11y-btn" aria-label="Alto contraste"        aria-pressed="false" title="Alto contraste">◑ Contraste</button>
+    <span class="a11y-bar-divider" aria-hidden="true"></span>
+    <button id="btn-spacing"      class="a11y-btn" aria-label="Espaçamento de letras" aria-pressed="false" title="Espaçamento">A↔A</button>
+    <span class="a11y-bar-divider" aria-hidden="true"></span>
+    <button id="btn-reduce-motion" class="a11y-btn" aria-label="Reduzir animações"   aria-pressed="false" title="Reduzir animações">⏸ Anim.</button>
+  </nav>
+
+<div class="app-container">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" role="complementary" aria-label="Painel do simulador de ligações químicas">
+
+    <!-- Cabeçalho fixo da sidebar -->
+    <div class="sidebar-header">
+      <h1 class="sidebar-title">⚛️ Ligações Químicas</h1>
+      <p class="hint-text" id="app-description">
+        Monte moléculas clicando na tabela ou use <strong>Moléculas Prontas</strong> para carregá-las com geometria exata.
+      </p>
+    </div>
+
+    <!-- ===== ACCORDION CONTAINER ===== -->
+    <div class="accordion" id="main-accordion" role="list">
+
+      <!-- ── PAINEL 1: MOLÉCULAS PRONTAS ── -->
+      <div class="acc-panel" role="listitem">
+        <button class="acc-header" id="acc-mol-btn"
+                aria-expanded="false" aria-controls="acc-mol-body"
+                data-panel="mol">
+          <span class="acc-icon">🔬</span>
+          <span class="acc-label">Moléculas Prontas</span>
+          <span class="acc-badge" id="badge-mol" aria-label="total de moléculas disponíveis">0</span>
+          <svg class="acc-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <polyline points="5,8 10,13 15,8" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="acc-body collapsed" id="acc-mol-body" role="region" aria-labelledby="acc-mol-btn">
+          <!-- Busca de molécula -->
+          <div class="mol-preset-search-wrap">
+            <input type="search" id="mol-preset-search"
+                   class="pt-search-input"
+                   placeholder="🔍 Buscar molécula..."
+                   aria-label="Buscar molécula pré-montada"
+                   autocomplete="off">
+          </div>
+          <!-- Abas de categoria -->
+          <div class="mol-cat-tabs" role="tablist" aria-label="Categorias de moléculas">
+            <button class="mol-cat-btn active-cat" data-cat="all"       role="tab" aria-selected="true">Todas</button>
+            <button class="mol-cat-btn"            data-cat="inorganic" role="tab" aria-selected="false">Inorg.</button>
+            <button class="mol-cat-btn"            data-cat="organic"   role="tab" aria-selected="false">Org.</button>
+            <button class="mol-cat-btn"            data-cat="acid"      role="tab" aria-selected="false">Ácidos</button>
+            <button class="mol-cat-btn"            data-cat="base"      role="tab" aria-selected="false">Bases</button>
+            <button class="mol-cat-btn"            data-cat="halide"    role="tab" aria-selected="false">Haletos</button>
+            <button class="mol-cat-btn"            data-cat="noble"     role="tab" aria-selected="false">Nobres</button>
+          </div>
+          <!-- Grid -->
+          <div class="mol-preset-grid" id="mol-preset-grid" role="list"
+               aria-label="Moléculas — clique para montar no canvas"></div>
+        </div>
+      </div>
+
+      <!-- ── PAINEL 2: TABELA PERIÓDICA ── -->
+      <div class="acc-panel" role="listitem">
+        <button class="acc-header" id="acc-pt-btn"
+                aria-expanded="false" aria-controls="acc-pt-body"
+                data-panel="pt">
+          <span class="acc-icon">🧪</span>
+          <span class="acc-label">Tabela Periódica</span>
+          <span class="acc-badge" aria-label="118 elementos">118</span>
+          <svg class="acc-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <polyline points="5,8 10,13 15,8" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="acc-body collapsed" id="acc-pt-body" role="region" aria-labelledby="acc-pt-btn">
+          <!-- Busca -->
+          <div class="pt-search-bar" role="search" aria-label="Buscar elemento">
+            <label for="element-search" class="sr-only">Buscar por símbolo, nome ou número atômico</label>
+            <input type="search" id="element-search" class="pt-search-input"
+                   placeholder="🔍 Símbolo, nome ou número..."
+                   aria-label="Buscar elemento" autocomplete="off">
+            <div class="pt-legend-row" id="pt-legend" role="group" aria-label="Filtrar por categoria"></div>
+          </div>
+          <!-- Grid da tabela -->
+          <div class="pt-wrapper">
+            <div class="pt-grid" id="periodic-table" role="grid"
+                 aria-label="Tabela periódica — Enter ou Espaço para adicionar ao canvas"></div>
+            <div class="pt-fblock-label" aria-hidden="true">
+              <span>57–71 Lantanídeos</span><span>89–103 Actinídeos</span>
+            </div>
+            <div class="pt-fblock" id="fblock-table" role="grid"
+                 aria-label="Bloco f — Lantanídeos e Actinídeos"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAINEL 3: CONTROLES ── -->
+      <div class="acc-panel" role="listitem">
+        <button class="acc-header" id="acc-ctrl-btn"
+                aria-expanded="false" aria-controls="acc-ctrl-body"
+                data-panel="ctrl">
+          <span class="acc-icon">⚙️</span>
+          <span class="acc-label">Controles</span>
+          <svg class="acc-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <polyline points="5,8 10,13 15,8" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="acc-body collapsed" id="acc-ctrl-body" role="region" aria-labelledby="acc-ctrl-btn">
+
+          <!-- Canvas -->
+          <div class="ctrl-group">
+            <div class="ctrl-group-label">Canvas</div>
+            <div class="controls-row">
+              <button id="btn-reset" class="btn btn-outline-danger btn-sm"
+                      aria-label="Limpar canvas — remove todos os átomos e ligações">
+                🔄 Limpar
+              </button>
+              <button id="btn-delete-mode" class="btn btn-outline-danger btn-sm"
+                      aria-label="Ativar modo de remoção de átomo" aria-pressed="false">
+                🗑️ Remover
+              </button>
+              <button id="btn-toggle-3d" class="btn btn-outline-info btn-sm"
+                      aria-label="Visualização 3D" aria-pressed="false">
+                🧬 3D
+              </button>
+            </div>
+          </div>
+
+          <!-- Física -->
+          <div class="ctrl-group">
+            <div class="ctrl-group-label">Simulação Física</div>
+            <div class="controls-row">
+              <button id="btn-physics" class="btn btn-warning btn-sm"
+                      aria-label="Pausar simulação física" aria-pressed="false">
+                ⏸ Pausar
+              </button>
+              <button id="btn-snap" class="btn btn-outline-success btn-sm"
+                      aria-label="Ajustar ao comprimento ideal de ligação">
+                🎯 Snap
+              </button>
+              <button id="btn-freeze-geo" class="btn btn-outline-secondary btn-sm"
+                      aria-label="Travar geometria molecular" aria-pressed="false"
+                      title="Trava posições dos átomos; física ativa só para animações">
+                🔓 Travar
+              </button>
+            </div>
+          </div>
+
+          <!-- Visualização -->
+          <div class="ctrl-group">
+            <div class="ctrl-group-label">Visualização</div>
+            <div class="controls-row">
+              <button id="btn-wedge-toggle" class="btn btn-outline-secondary btn-sm"
+                      aria-label="Ativar notação de cunha estereoquímica" aria-pressed="false"
+                      title="Wedge bonds: sólida = frente, tracejada = trás, linha = plano">
+                ◀▶ Cunha
+              </button>
+              <button id="btn-show-angles" class="btn btn-outline-secondary btn-sm"
+                      aria-label="Mostrar ângulos de ligação no canvas" aria-pressed="false">
+                🔢 Ângulos
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAINEL 4: LIGAÇÃO COVALENTE ── -->
+      <div class="acc-panel acc-panel--covalente" role="listitem">
+        <button class="acc-header" id="acc-cov-btn"
+                aria-expanded="false" aria-controls="acc-cov-body"
+                data-panel="cov">
+          <span class="acc-icon">🔗</span>
+          <span class="acc-label">Ligação Covalente</span>
+          <span class="acc-badge acc-badge--cov" aria-hidden="true">σ π</span>
+          <svg class="acc-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <polyline points="5,8 10,13 15,8" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="acc-body collapsed" id="acc-cov-body" role="region" aria-labelledby="acc-cov-btn">
+
+          <!-- Botão de modo: ativa filtro exclusivo covalente no canvas -->
+          <button class="bond-mode-btn" id="btn-mode-cov"
+                  data-bond-type="covalent"
+                  aria-pressed="false"
+                  aria-label="Ativar modo covalente — canvas aceita apenas ligações covalentes">
+            <span class="bond-mode-btn-dot bond-mode-dot--cov"></span>
+            Ativar Modo Covalente
+          </button>
+
+          <p class="bond-type-desc">
+            Compartilhamento de pares de e⁻ (ΔEN &lt; 1,7). Pode ser <strong>simples</strong> (σ),
+            <strong>dupla</strong> (σ+π) ou <strong>tripla</strong> (σ+2π).
+            <strong>Polar</strong> (ΔEN ≥ 0,4) ou <strong>apolar</strong> (ΔEN &lt; 0,4).
+          </p>
+
+          <div class="bond-info-grid">
+            <div class="bond-info-item">
+              <div class="bond-info-label">ΔEN</div>
+              <div class="bond-info-value">&lt; 1,7</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Energia</div>
+              <div class="bond-info-value">150–942 kJ/mol</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Geometria</div>
+              <div class="bond-info-value">VSEPR</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Exemplos</div>
+              <div class="bond-info-value">H₂O, CH₄, CO₂</div>
+            </div>
+          </div>
+
+          <!-- Interações exclusivas da covalente -->
+          <div class="bond-interactions">
+            <div class="bond-interactions-label">Interações do canvas</div>
+
+            <fieldset class="bond-order-selector">
+              <legend class="bond-order-label">Ordem da ligação</legend>
+              <div class="bond-order-btns" role="group" aria-label="Selecionar ordem">
+                <button class="bond-order-btn active-order" data-order="auto"
+                        aria-pressed="true"
+                        aria-label="Automático — segue octeto e VSEPR"
+                        title="O simulador determina a ordem ideal pelo octeto">Auto</button>
+                <button class="bond-order-btn" data-order="1"
+                        aria-pressed="false"
+                        aria-label="Ligação simples σ"
+                        title="1 par compartilhado (σ)">─ Simples</button>
+                <button class="bond-order-btn" data-order="2"
+                        aria-pressed="false"
+                        aria-label="Ligação dupla σ+π"
+                        title="σ + π — menor e mais forte">═ Dupla</button>
+                <button class="bond-order-btn" data-order="3"
+                        aria-pressed="false"
+                        aria-label="Ligação tripla σ+2π"
+                        title="σ + 2π — a mais forte e curta">≡ Tripla</button>
+              </div>
+            </fieldset>
+
+            <button id="btn-bond-edit"
+                    class="btn btn-outline-info btn-sm w-100 mt-1"
+                    aria-pressed="false"
+                    aria-label="Ativar modo de edição de ligação individual"
+                    title="Clique numa ligação no canvas para selecionar e alterar sua ordem">
+              ✏️ Editar Ligação Individual
+            </button>
+            <div class="bond-edit-hint" id="bond-edit-hint" style="display:none"
+                 role="status" aria-live="polite">
+              👆 Clique sobre uma ligação para selecioná-la, depois escolha a ordem acima.
+            </div>
+            <div class="bond-order-warning" id="bond-order-warning"
+                 role="alert" aria-live="assertive"></div>
+          </div>
+
+          <div class="bond-type-note">
+            <span class="bond-type-note-icon">📐</span>
+            <span>Geometria segue VSEPR. Pares solitários comprimem o ângulo: H₂O 104,5°, NH₃ 107,8°, CH₄ 109,5°.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAINEL 5: LIGAÇÃO IÔNICA ── -->
+      <div class="acc-panel acc-panel--ionica" role="listitem">
+        <button class="acc-header" id="acc-ion-btn"
+                aria-expanded="false" aria-controls="acc-ion-body"
+                data-panel="ion">
+          <span class="acc-icon">⚡</span>
+          <span class="acc-label">Ligação Iônica</span>
+          <span class="acc-badge acc-badge--ion" aria-hidden="true">e⁻→</span>
+          <svg class="acc-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <polyline points="5,8 10,13 15,8" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="acc-body collapsed" id="acc-ion-body" role="region" aria-labelledby="acc-ion-btn">
+
+          <button class="bond-mode-btn" id="btn-mode-ion"
+                  data-bond-type="ionic"
+                  aria-pressed="false"
+                  aria-label="Ativar modo iônico — canvas aceita apenas ligações iônicas">
+            <span class="bond-mode-btn-dot bond-mode-dot--ion"></span>
+            Ativar Modo Iônico
+          </button>
+
+          <p class="bond-type-desc">
+            Transferência <strong>completa</strong> de e⁻ de <strong>metal</strong> para
+            <strong>ametal</strong> (ΔEN &gt; 1,7). Forma cátions (+) e ânions (−) que se
+            atraem eletrostaticamente numa rede cristalina.
+          </p>
+
+          <div class="bond-info-grid">
+            <div class="bond-info-item">
+              <div class="bond-info-label">ΔEN mínimo</div>
+              <div class="bond-info-value">&gt; 1,7</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Energia</div>
+              <div class="bond-info-value">400–4000 kJ/mol</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Estrutura</div>
+              <div class="bond-info-value">Rede cristalina</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Conduz?</div>
+              <div class="bond-info-value">Fundido/solução</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">P. fusão</div>
+              <div class="bond-info-value">Alto</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Exemplos</div>
+              <div class="bond-info-value">NaCl, MgO, CaF₂</div>
+            </div>
+          </div>
+
+          <!-- Interações exclusivas da iônica -->
+          <div class="bond-interactions">
+            <div class="bond-interactions-label">Interações do canvas</div>
+            <div class="bond-ionic-hint">
+              No modo iônico o simulador transfere automaticamente e⁻ do metal ao ametal
+              e exibe a <strong>carga iônica</strong> (ex: Na⁺ Cl⁻) sobre cada átomo.
+            </div>
+            <div class="bond-ionic-pairs">
+              <div class="bond-ionic-pair-label">Pares recomendados</div>
+              <div class="bond-ionic-pairs-grid">
+                <span class="ion-pair-chip">Na + Cl</span>
+                <span class="ion-pair-chip">K + Cl</span>
+                <span class="ion-pair-chip">Ca + O</span>
+                <span class="ion-pair-chip">Mg + O</span>
+                <span class="ion-pair-chip">Na + F</span>
+                <span class="ion-pair-chip">Li + Cl</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bond-type-note">
+            <span class="bond-type-note-icon">⚡</span>
+            <span>Adicione Na + Cl — o simulador transfere e⁻ e exibe Na⁺ e Cl⁻ automaticamente.</span>
+          </div>
+          <div class="bond-type-note bond-type-note--warning">
+            <span class="bond-type-note-icon">⚠️</span>
+            <span>A fronteira iônica/covalente é um <strong>contínuo</strong> (IUPAC). ΔEN 1,2–1,7 indica caráter iônico parcial.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAINEL 6: LIGAÇÃO METÁLICA ── -->
+      <div class="acc-panel acc-panel--metalica" role="listitem">
+        <button class="acc-header" id="acc-met-btn"
+                aria-expanded="false" aria-controls="acc-met-body"
+                data-panel="met">
+          <span class="acc-icon">🧲</span>
+          <span class="acc-label">Ligação Metálica</span>
+          <span class="acc-badge acc-badge--met" aria-hidden="true">e⁻~</span>
+          <svg class="acc-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <polyline points="5,8 10,13 15,8" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="acc-body collapsed" id="acc-met-body" role="region" aria-labelledby="acc-met-btn">
+
+          <button class="bond-mode-btn" id="btn-mode-met"
+                  data-bond-type="metallic"
+                  aria-pressed="false"
+                  aria-label="Ativar modo metálico — canvas aceita apenas ligações metálicas">
+            <span class="bond-mode-btn-dot bond-mode-dot--met"></span>
+            Ativar Modo Metálico
+          </button>
+
+          <p class="bond-type-desc">
+            "<strong>Mar de elétrons</strong>": cátions metálicos fixos numa rede com e⁻ de
+            condução <strong>deslocalizados</strong>. Não direcional — explica maleabilidade,
+            ductilidade, brilho e condutividade elétrica/térmica.
+          </p>
+
+          <div class="bond-info-grid">
+            <div class="bond-info-item">
+              <div class="bond-info-label">Tipo</div>
+              <div class="bond-info-value">Metal + Metal</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Energia</div>
+              <div class="bond-info-value">70–850 kJ/mol</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Direcional?</div>
+              <div class="bond-info-value">Não</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Conduz?</div>
+              <div class="bond-info-value">Sempre</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Maleável?</div>
+              <div class="bond-info-value">Sim</div>
+            </div>
+            <div class="bond-info-item">
+              <div class="bond-info-label">Exemplos</div>
+              <div class="bond-info-value">Fe, Cu, Al, Au</div>
+            </div>
+          </div>
+
+          <!-- Interações exclusivas da metálica -->
+          <div class="bond-interactions">
+            <div class="bond-interactions-label">Interações do canvas</div>
+            <div class="bond-ionic-hint">
+              No modo metálico o simulador exibe o <strong>mar de elétrons animado</strong> em amarelo
+              ao redor dos cátions. Adicione apenas metais.
+            </div>
+            <div class="bond-ionic-pairs">
+              <div class="bond-ionic-pair-label">Metais recomendados</div>
+              <div class="bond-ionic-pairs-grid">
+                <span class="ion-pair-chip ion-pair-chip--met">Fe</span>
+                <span class="ion-pair-chip ion-pair-chip--met">Cu</span>
+                <span class="ion-pair-chip ion-pair-chip--met">Al</span>
+                <span class="ion-pair-chip ion-pair-chip--met">Na</span>
+                <span class="ion-pair-chip ion-pair-chip--met">Au</span>
+                <span class="ion-pair-chip ion-pair-chip--met">Ag</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bond-type-note">
+            <span class="bond-type-note-icon">🧲</span>
+            <span>Adicione Fe + Fe ou Cu + Cu para ver o <strong>mar de elétrons animado</strong> em amarelo.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAINEL 5: ANÁLISE ── -->
+      <div class="acc-panel" role="listitem">
+        <button class="acc-header" id="acc-info-btn"
+                aria-expanded="false" aria-controls="acc-info-body"
+                data-panel="info">
+          <span class="acc-icon">📊</span>
+          <span class="acc-label">Análise</span>
+          <svg class="acc-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <polyline points="5,8 10,13 15,8" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="acc-body collapsed" id="acc-info-body" role="region" aria-labelledby="acc-info-btn">
+
+          <!-- Painel Molecular -->
+          <section class="mol-panel" id="mol-panel" aria-label="Molécula ativa" aria-live="polite">
+            <div class="mol-panel-header" aria-hidden="true">🧬 Molécula Ativa</div>
+            <div class="mol-formula" id="mol-formula" aria-label="Fórmula molecular">—</div>
+            <div class="mol-stats" id="mol-stats" aria-label="Estatísticas"></div>
+          </section>
+
+          <!-- Gráfico de energia -->
+          <section class="energy-panel" aria-label="Gráfico de energia potencial">
+            <strong id="energy-chart-title">📈 Energia × Distância</strong>
+            <svg id="energy-chart" preserveAspectRatio="xMidYMid meet"
+                 role="img" aria-labelledby="energy-chart-title energy-caption"></svg>
+            <p class="energy-caption" id="energy-caption" role="status" aria-live="polite">
+              Adicione dois átomos para gerar a curva.
+            </p>
+          </section>
+
+          <!-- Painel de informação -->
+          <section class="info-panel" aria-label="Análise da ligação química">
+            <strong>🧪 Análise da Ligação</strong>
+            <div id="info-text" aria-live="polite" aria-atomic="true">
+              Clique em elementos para detectar interações.
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div><!-- /.accordion -->
+
+    <!-- Tooltip flutuante -->
+    <div class="el-tooltip" id="el-tooltip" aria-hidden="true" role="tooltip"></div>
+  </aside>
+
+  <!-- ===================== CANVAS ===================== -->
+  <main class="canvas-area" id="main-content" aria-label="Canvas de simulação molecular">
+    <div id="canvas-wrapper">
+      <div id="canvas"
+           role="application"
+           aria-label="Área de simulação — átomos e ligações químicas"
+           aria-describedby="app-description"
+           tabindex="0">
+        <svg id="bond-svg" aria-hidden="true"></svg>
+        <div id="canvas-hint" aria-live="polite">
+          Clique em elementos da tabela periódica para começar
+        </div>
+        <!-- Indicador de modo de ligação ativo -->
+        <div id="bond-mode-indicator" aria-live="polite" class="bond-mode-indicator hidden">
+          <span id="bond-mode-indicator-icon"></span>
+          <span id="bond-mode-indicator-text"></span>
+          <button id="bond-mode-indicator-clear" aria-label="Desativar modo de ligação">✕</button>
+        </div>
+        <div id="bond-edit-overlay" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div id="viewer3d"
+         role="application"
+         aria-label="Visualização 3D da molécula"
+         tabindex="-1"></div>
+  </main>
+</div><!-- /.app-container -->
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/3dmol@2.0.4/build/3Dmol-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<!-- VLibras — carregado de forma assíncrona e segura -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';
+    script.onload = function() {
+      try { new window.VLibras.Widget('https://vlibras.gov.br/app'); } catch(e) {}
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+<script src="script.js"></script>
+</body>
+</html>
