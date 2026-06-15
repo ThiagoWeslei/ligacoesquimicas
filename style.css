@@ -1322,7 +1322,7 @@ body.high-contrast .mol-cat-btn.active-cat { background: #ffff00 !important; col
   .acc-header { padding: 7px 9px; font-size: .76rem; }
   .a11y-bar{ padding:4px 8px; gap:3px 5px; }
   .a11y-bar-label{display:none;}
-  .a11y-btn{ padding:3px 6px; font-size:.65rem; }
+  .a11y-btn{ padding:3px 6px; font-size:.65rem;
 }
 
 /* Touch devices */
