@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===================================================================
-     5. AUXILIARES FÍSICO-QUÍMICOS
+     5. AUXILIARES FÍSICO-QUÍMICOS CORE
      =================================================================== */
   function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
   function getBondLength(eA, eB) { return (ELEMENTS[eA].radius + ELEMENTS[eB].radius) * SCALE; }
@@ -254,10 +254,27 @@ document.addEventListener('DOMContentLoaded', () => {
   function isMetal(cat) {
     return ['alkali-metal','alkaline-earth','transition','post-transition','lanthanide','actinide'].includes(cat);
   }
+  function isNonmetal(cat) {
+    return ['nonmetal','noble-gas'].includes(cat);
+  }
+  function isMetalloid(cat) {
+    return cat === 'metalloid';
+  }
   function maxIonicCharge(sym) {
     const el = ELEMENTS[sym];
     if (isMetal(el.category)) return el.valence;
     return -((sym === 'H' ? 2 : 8) - el.valence);
+  }
+  function ionicBondCount(id) {
+    return bonds.filter(b => b.type === 'ionic' && (b.a === id || b.b === id)).length;
+  }
+  function ionicCapacity(sym) {
+    return Math.abs(maxIonicCharge(sym));
+  }
+  function canFormIonicBond(a, b) {
+    const capA = ionicCapacity(a.element);
+    const capB = ionicCapacity(b.element);
+    return ionicBondCount(a.id) < capA && ionicBondCount(b.id) < capB;
   }
   function getContrastColor(hex) {
     const c = hex.replace('#','');
@@ -269,9 +286,253 @@ document.addEventListener('DOMContentLoaded', () => {
     const mag=Math.abs(ch), sup={1:'',2:'²',3:'³'}, sign=ch>0?'⁺':'⁻';
     return `${mag>1?(sup[mag]||mag):''}${sign}`;
   }
+
   /* ===================================================================
-     BANCO DE DADOS DE LIGAÇÕES — todos os tipos reconhecidos pela literatura
-     com energias, comprimentos e particularidades segundo IUPAC 2024
+     6. SISTEMA DE VALIDAÇÃO DE LIGAÇÕES — baseado em pesquisa científica
+     ===================================================================
+     Regras derivadas de:
+     • IUPAC Compendium of Chemical Terminology (Gold Book)
+     • Chemistry LibreTexts — Metallic/Covalent/Ionic bonding
+     • Pauling electronegativity continuum (ionic character formula)
+     • Fractory.com — Metalloids bond behavior
+     • LibreTexts — Noble gas compounds (Kr, Xe, Rn only)
+     • LibreTexts — Hydrogen ionic hydrides (Group 1 & 2 only)
+
+     ESTRUTURA DA VALIDAÇÃO:
+     Para cada tipo de ligação existem três funções:
+       canBondX(symA, symB)  → boolean: pode formar ligação X?
+       whyCannotBondX(...)   → string:  razão legível
+       bondXWarning(...)     → exibe aviso no painel + anuncia
+
+     determineBondType() usa essas funções para decidir o tipo
+     correto E bloquear combinações inválidas antes de criar bonds.
+     =================================================================== */
+
+  /* ────────────────────────────────────────────────────────────────────
+     LIGAÇÃO METÁLICA
+     Regra:  apenas metal + metal (mesmo elemento ou metais distintos).
+     Exceção: Gálio (Ga) e Mercúrio (Hg) têm ligações metálicas mas
+              também formam ligações covalentes M-M — permitimos ambos.
+     Não-metal, semimetal e gás nobre: NUNCA metálica.
+     ──────────────────────────────────────────────────────────────────── */
+  const METALLIC_CAPABLE = new Set([
+    // Metais alcalinos
+    'Li','Na','K','Rb','Cs','Fr',
+    // Metais alcalino-terrosos
+    'Be','Mg','Ca','Sr','Ba','Ra',
+    // Metais de transição
+    'Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn',
+    'Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd',
+    'Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg',
+    'Rf','Db','Sg','Bh','Hs','Mt','Ds','Rg','Cn',
+    // Metais pós-transição
+    'Al','Ga','In','Sn','Tl','Pb','Bi','Nh','Fl','Mc','Lv',
+    // Lantanídeos
+    'La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',
+    // Actinídeos
+    'Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr',
+  ]);
+
+  function canFormMetallicBond(symA, symB) {
+    return METALLIC_CAPABLE.has(symA) && METALLIC_CAPABLE.has(symB);
+  }
+
+  function whyCannotMetallic(symA, symB) {
+    const notA = !METALLIC_CAPABLE.has(symA);
+    const notB = !METALLIC_CAPABLE.has(symB);
+    const el   = ELEMENTS;
+    if (notA && notB) return `${symA} e ${symB} não são metais — ligação metálica requer dois metais.`;
+    if (notA) return `${symA} (${el[symA]?.category||'?'}) não é metal — ligação metálica requer dois metais.`;
+    return         `${symB} (${el[symB]?.category||'?'}) não é metal — ligação metálica requer dois metais.`;
+  }
+
+  /* ────────────────────────────────────────────────────────────────────
+     LIGAÇÃO IÔNICA
+     Regra base: metal + ametal com ΔEN > 1,7 (Pauling).
+     Exceções/extensões:
+       • H + metal alcalino (Li,Na,K,Rb,Cs) → hidreto iônico (H⁻)
+       • H + metal alcalino-terroso (Mg,Ca,Sr,Ba) → hidreto iônico
+       • Metal + metal: NUNCA iônica
+       • Dois ametais: NUNCA iônica
+       • Semimetal + HA (alta EN): possível caráter iônico, mas
+         representado como covalente na zona de transição ΔEN>1,7
+       • Gases nobres He, Ne, Ar: NUNCA iônica
+       • Kr, Xe, Rn: apenas covalente com F e O (não iônica)
+     ──────────────────────────────────────────────────────────────────── */
+  const IONIC_DONOR_CATS    = new Set(['alkali-metal','alkaline-earth','transition',
+                                        'post-transition','lanthanide','actinide']);
+  const IONIC_ACCEPTOR_CATS = new Set(['nonmetal']);
+  // Gases nobres que nunca formam ligações iônicas
+  const NOBLE_NO_IONIC      = new Set(['He','Ne','Ar','Kr','Xe','Rn','Og']);
+  // Metais que formam hidretos iônicos com H
+  const IONIC_HYDRIDE_METALS = new Set(['Li','Na','K','Rb','Cs','Fr',
+                                         'Mg','Ca','Sr','Ba','Ra']);
+
+  function canFormIonicBondType(symA, symB) {
+    const elA = ELEMENTS[symA], elB = ELEMENTS[symB];
+    if (!elA || !elB) return false;
+    const catA = elA.category, catB = elB.category;
+
+    // Gases nobres leves: nunca iônica
+    if (NOBLE_NO_IONIC.has(symA) || NOBLE_NO_IONIC.has(symB)) return false;
+
+    // Metal + metal: nunca iônica (é metálica)
+    if (isMetal(catA) && isMetal(catB)) return false;
+
+    // H + metal alcalino ou alcalino-terroso = hidreto iônico (exceção da literatura)
+    if (symA === 'H' && IONIC_HYDRIDE_METALS.has(symB)) return true;
+    if (symB === 'H' && IONIC_HYDRIDE_METALS.has(symA)) return true;
+
+    // H geral (não é doador nem receptor clássico de íon): bloqueia iônica
+    // exceto o caso acima de hidreto com metais eletropositivos
+    if (symA === 'H' || symB === 'H') return false;
+
+    // Dois ametais: nunca iônica
+    if (isNonmetal(catA) && isNonmetal(catB)) return false;
+
+    // Semimetal + ametal: covalente (às vezes polar), nunca iônica clássica
+    if (isMetalloid(catA) || isMetalloid(catB)) return false;
+
+    // Metal + ametal: iônica se ΔEN > 1,7
+    const dEN = Math.abs((elA.en||1.0) - (elB.en||1.0));
+    if (IONIC_DONOR_CATS.has(catA) && IONIC_ACCEPTOR_CATS.has(catB)) return dEN > 1.7;
+    if (IONIC_DONOR_CATS.has(catB) && IONIC_ACCEPTOR_CATS.has(catA)) return dEN > 1.7;
+
+    return false;
+  }
+
+  function whyCannotIonic(symA, symB) {
+    const elA = ELEMENTS[symA], elB = ELEMENTS[symB];
+    const catA = elA?.category || '?', catB = elB?.category || '?';
+
+    if (NOBLE_NO_IONIC.has(symA)) return `${symA} é gás nobre e não forma ligações iônicas.`;
+    if (NOBLE_NO_IONIC.has(symB)) return `${symB} é gás nobre e não forma ligações iônicas.`;
+    if (isMetal(catA) && isMetal(catB)) return `${symA} e ${symB} são ambos metais — formam ligação metálica, não iônica.`;
+    if (isNonmetal(catA) && isNonmetal(catB)) return `${symA} e ${symB} são ambos ametais — formam ligação covalente, não iônica.`;
+    if (isMetalloid(catA)) return `${symA} é semimetal — forma ligações covalentes, não iônicas clássicas.`;
+    if (isMetalloid(catB)) return `${symB} é semimetal — forma ligações covalentes, não iônicas clássicas.`;
+
+    const dEN = Math.abs((elA?.en||1.0) - (elB?.en||1.0));
+    if (dEN <= 1.7) return `ΔEN = ${dEN.toFixed(2)} ≤ 1,7 — caráter predominantemente covalente (regra de Pauling).`;
+
+    return `${symA}–${symB}: combinação não suporta ligação iônica segundo as regras de valência.`;
+  }
+
+  /* ────────────────────────────────────────────────────────────────────
+     LIGAÇÃO COVALENTE
+     Regra: qualquer par que compartilhe elétrons.
+     Possível em:
+       • Ametal + ametal (sempre)
+       • Semimetal + ametal (sempre covalente)
+       • Semimetal + semimetal (covalente)
+       • Metal + ametal com ΔEN ≤ 1,7 (zona de transição, polar)
+       • H + qualquer não-gás-nobre (quase sempre covalente)
+       • Kr + F, Kr + O (covalente — KrF₂, exceção)
+       • Xe + F, Xe + O (covalente — XeF₂, XeF₄, XeO₃)
+       • Rn + F (covalente — RnF₂)
+       • He, Ne, Ar: NUNCA covalente (octeto completo, sem d disponível)
+     ──────────────────────────────────────────────────────────────────── */
+  // Gases nobres pesados que podem formar compostos covalentes com F e O
+  const NOBLE_COVALENT_OK   = new Set(['Kr','Xe','Rn']);
+  const NOBLE_COVALENT_PAIR = new Set(['F','O']); // pares permitidos com Xe/Kr/Rn
+  const NOBLE_NEVER         = new Set(['He','Ne','Ar','Og']); // nunca ligações
+
+  function canFormCovalentBond(symA, symB) {
+    const elA = ELEMENTS[symA], elB = ELEMENTS[symB];
+    if (!elA || !elB) return false;
+
+    // Gases nobres leves: NUNCA qualquer ligação
+    if (NOBLE_NEVER.has(symA) || NOBLE_NEVER.has(symB)) return false;
+
+    // Gases nobres pesados: apenas com F e O
+    if (NOBLE_COVALENT_OK.has(symA)) return NOBLE_COVALENT_PAIR.has(symB);
+    if (NOBLE_COVALENT_OK.has(symB)) return NOBLE_COVALENT_PAIR.has(symA);
+
+    // Dois metais: sem ligação covalente (é metálica)
+    if (isMetal(elA.category) && isMetal(elB.category)) return false;
+
+    // Octeto: H aceita apenas 1 ligação; gases nobres zero
+    if (symA === 'H' && covalentCap('H') - bondOrderSum('__check__') <= 0) return false;
+
+    return true; // default: covalente
+  }
+
+  function whyCannotCovalent(symA, symB) {
+    if (NOBLE_NEVER.has(symA)) return `${symA} é gás nobre inerte (camada de valência completa) — não forma ligações.`;
+    if (NOBLE_NEVER.has(symB)) return `${symB} é gás nobre inerte (camada de valência completa) — não forma ligações.`;
+    if (NOBLE_COVALENT_OK.has(symA) && !NOBLE_COVALENT_PAIR.has(symB))
+      return `${symA} só forma compostos covalentes com F ou O (ex: ${symA}F₂, ${symA}O₃).`;
+    if (NOBLE_COVALENT_OK.has(symB) && !NOBLE_COVALENT_PAIR.has(symA))
+      return `${symB} só forma compostos covalentes com F ou O (ex: ${symB}F₂, ${symB}O₃).`;
+    if (isMetal(ELEMENTS[symA]?.category) && isMetal(ELEMENTS[symB]?.category))
+      return `${symA} e ${symB} são ambos metais — formam ligação metálica, não covalente.`;
+    return `${symA}–${symB}: combinação não suporta ligação covalente.`;
+  }
+
+  /* ────────────────────────────────────────────────────────────────────
+     VALIDAÇÃO PRINCIPAL — verifica se a combinação é possível no modo ativo
+     Retorna { allowed: bool, reason: string, suggestedType: string|null }
+     ──────────────────────────────────────────────────────────────────── */
+  function validateBondCombination(symA, symB, requestedType) {
+    const elA = ELEMENTS[symA], elB = ELEMENTS[symB];
+    if (!elA || !elB) return { allowed: false, reason: 'Elemento desconhecido.', suggestedType: null };
+
+    // Gases nobres leves: bloqueio total
+    if (NOBLE_NEVER.has(symA)) return { allowed: false,
+      reason: `${symA} é gás nobre inerte (He/Ne/Ar) e não forma nenhum tipo de ligação química.`,
+      suggestedType: null };
+    if (NOBLE_NEVER.has(symB)) return { allowed: false,
+      reason: `${symB} é gás nobre inerte (He/Ne/Ar) e não forma nenhum tipo de ligação química.`,
+      suggestedType: null };
+
+    const type = requestedType;
+
+    if (type === 'metallic') {
+      if (!canFormMetallicBond(symA, symB)) return {
+        allowed: false,
+        reason: whyCannotMetallic(symA, symB),
+        suggestedType: canFormCovalentBond(symA, symB) ? 'covalent' :
+                       canFormIonicBondType(symA, symB) ? 'ionic' : null,
+      };
+    }
+    if (type === 'ionic') {
+      if (!canFormIonicBondType(symA, symB)) return {
+        allowed: false,
+        reason: whyCannotIonic(symA, symB),
+        suggestedType: canFormCovalentBond(symA, symB) ? 'covalent' :
+                       canFormMetallicBond(symA, symB) ? 'metallic' : null,
+      };
+    }
+    if (type === 'covalent') {
+      if (!canFormCovalentBond(symA, symB)) return {
+        allowed: false,
+        reason: whyCannotCovalent(symA, symB),
+        suggestedType: canFormMetallicBond(symA, symB) ? 'metallic' :
+                       canFormIonicBondType(symA, symB) ? 'ionic' : null,
+      };
+    }
+
+    return { allowed: true, reason: '', suggestedType: null };
+  }
+
+  /* Exibe aviso de validação no painel de análise */
+  function showBondValidationWarning(result, symA, symB) {
+    const warn = document.getElementById('bond-order-warning');
+    if (!warn) return;
+    let msg = `⚠️ ${symA}–${symB}: ${result.reason}`;
+    if (result.suggestedType) {
+      const names = { covalent:'Covalente', ionic:'Iônica', metallic:'Metálica' };
+      msg += ` Sugestão: tente Ligação ${names[result.suggestedType]}.`;
+    }
+    warn.textContent = msg;
+    warn.style.display = 'block';
+    clearTimeout(warn._t);
+    warn._t = setTimeout(() => { warn.style.display = 'none'; }, 5000);
+    announce(msg, 'assertive');
+  }
+
+  /* ===================================================================
+     BANCO DE DADOS DE LIGAÇÕES
      =================================================================== */
   const BOND_DATA = {
     ionic: {
@@ -301,39 +562,116 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   };
 
-    /* Detecta o tipo de ligação para o par de elementos */
+  /* ===================================================================
+     DETERMINAÇÃO DO TIPO DE LIGAÇÃO
+     Integra o sistema de validação científica:
+       1. Se activeBondFilter está ativo → valida se a combinação é
+          possível para aquele tipo; bloqueia e avisa se não for.
+       2. Sem filtro → usa as regras científicas para determinar
+          automaticamente o tipo correto.
+     =================================================================== */
   function determineBondType(eA, eB) {
-    const a=ELEMENTS[eA], b=ELEMENTS[eB];
-    const enA=a.en||1.0, enB=b.en||1.0, dEN=Math.abs(enA-enB);
-    const bothMetal=isMetal(a.category)&&isMetal(b.category);
-    const oneMetal =isMetal(a.category)!==isMetal(b.category);
+    const a = ELEMENTS[eA], b = ELEMENTS[eB];
+    if (!a || !b) return null;
 
-    /* Modo de filtro ativo: força o tipo selecionado independente dos elementos.
-       Permite ao usuário explorar cada tipo de ligação isoladamente.           */
-    if (activeBondFilter === 'metallic') {
-      return {type:'metallic', subtype:'metallic', polarNote:null};
-    }
-    if (activeBondFilter === 'ionic') {
-      const aIsM = isMetal(a.category);
-      const donor = aIsM ? {el:eA,cat:a.category} : {el:eB,cat:b.category};
-      const acc   = aIsM ? {el:eB,cat:b.category} : {el:eA,cat:a.category};
-      return {type:'ionic', subtype:'ionic', polarNote:null};
-    }
-    if (activeBondFilter === 'covalent') {
-      if (dEN >= 0.4) return {type:'covalent', subtype:'covalent_polar',    polarNote:null};
-      return               {type:'covalent', subtype:'covalent_nonpolar', polarNote:null};
+    const enA = a.en || 1.0, enB = b.en || 1.0;
+    const dEN = Math.abs(enA - enB);
+
+    /* ── Modo com filtro ativo ─────────────────────────────────────── */
+    if (activeBondFilter) {
+      const result = validateBondCombination(eA, eB, activeBondFilter);
+      if (!result.allowed) {
+        showBondValidationWarning(result, eA, eB);
+        return null; // bloqueia a ligação
+      }
+      // Filtro ativo e combinação válida: força o tipo solicitado
+      if (activeBondFilter === 'metallic') {
+        return { type:'metallic', subtype:'metallic', polarNote:null };
+      }
+      if (activeBondFilter === 'ionic') {
+        return { type:'ionic', subtype:'ionic', polarNote:null };
+      }
+      if (activeBondFilter === 'covalent') {
+        if (dEN >= 0.4) return { type:'covalent', subtype:'covalent_polar',    polarNote:null };
+        return              { type:'covalent', subtype:'covalent_nonpolar', polarNote:null };
+      }
     }
 
-    /* Comportamento automático (sem filtro) */
-    if (bothMetal) return {type:'metallic', subtype:'metallic', polarNote:null};
-    if (oneMetal && dEN > 1.7) return {type:'ionic', subtype:'ionic', polarNote:null};
+    /* ── Modo automático — aplica regras científicas ──────────────── */
 
+    // Gases nobres He, Ne, Ar, Og: bloqueio total
+    if (NOBLE_NEVER.has(eA) || NOBLE_NEVER.has(eB)) {
+      const inert = NOBLE_NEVER.has(eA) ? eA : eB;
+      showBondValidationWarning({
+        allowed: false,
+        reason: `${inert} é gás nobre inerte e não forma ligações químicas.`,
+        suggestedType: null,
+      }, eA, eB);
+      return null;
+    }
+
+    // Kr, Xe, Rn: apenas com F ou O
+    if (NOBLE_COVALENT_OK.has(eA) || NOBLE_COVALENT_OK.has(eB)) {
+      const noble = NOBLE_COVALENT_OK.has(eA) ? eA : eB;
+      const other = noble === eA ? eB : eA;
+      if (!NOBLE_COVALENT_PAIR.has(other)) {
+        showBondValidationWarning({
+          allowed: false,
+          reason: `${noble} (gás nobre pesado) só forma compostos com F ou O. Ex: ${noble}F₂, ${noble}O₃.`,
+          suggestedType: null,
+        }, eA, eB);
+        return null;
+      }
+      // Ligação covalente com F ou O
+      return { type:'covalent', subtype: dEN >= 0.4 ? 'covalent_polar' : 'covalent_nonpolar', polarNote:null };
+    }
+
+    // Dois metais → metálica
+    if (isMetal(a.category) && isMetal(b.category)) {
+      return { type:'metallic', subtype:'metallic', polarNote:null };
+    }
+
+    // H + metal alcalino/alcalino-terroso → hidreto iônico
+    if ((eA === 'H' && IONIC_HYDRIDE_METALS.has(eB)) ||
+        (eB === 'H' && IONIC_HYDRIDE_METALS.has(eA))) {
+      // Só forma hidreto iônico se ΔEN > 1,7
+      if (dEN > 1.7) return { type:'ionic', subtype:'ionic', polarNote:null };
+    }
+
+    // H com outros: sempre covalente
+    if (eA === 'H' || eB === 'H') {
+      if (dEN >= 0.4) return { type:'covalent', subtype:'covalent_polar', polarNote:null };
+      return { type:'covalent', subtype:'covalent_nonpolar', polarNote:null };
+    }
+
+    // Semimetal: sempre covalente (nunca iônica clássica, nunca metálica com ametal)
+    if (isMetalloid(a.category) || isMetalloid(b.category)) {
+      if (dEN >= 1.2 && dEN <= 1.7) return {
+        type:'covalent', subtype:'covalent_transition',
+        polarNote:`⚠️ <em>Zona de transição</em> ΔEN=${dEN.toFixed(2)}: ligação com <strong>caráter iônico parcial</strong> (IUPAC).`
+      };
+      if (dEN >= 0.4) return { type:'covalent', subtype:'covalent_polar', polarNote:null };
+      return              { type:'covalent', subtype:'covalent_nonpolar', polarNote:null };
+    }
+
+    // Metal + ametal: decide pelo ΔEN (Pauling)
+    if (isMetal(a.category) !== isMetal(b.category)) {
+      if (dEN > 1.7) return { type:'ionic', subtype:'ionic', polarNote:null };
+      if (dEN >= 1.2) return {
+        type:'covalent', subtype:'covalent_transition',
+        polarNote:`⚠️ <em>Zona de transição</em> ΔEN=${dEN.toFixed(2)} (1,2–1,7): ligação com <strong>caráter iônico parcial</strong>. A distinção iônica/covalente é uma simplificação didática (IUPAC).`
+      };
+      if (dEN >= 0.4) return { type:'covalent', subtype:'covalent_polar', polarNote:null };
+      return              { type:'covalent', subtype:'covalent_nonpolar', polarNote:null };
+    }
+
+    // Dois ametais: covalente
     if (dEN >= 1.2 && dEN <= 1.7) return {
       type:'covalent', subtype:'covalent_transition',
-      polarNote:`⚠️ <em>Zona de transição</em> ΔEN=${dEN.toFixed(2)} (1,2–1,7): ligação com <strong>caráter iônico parcial</strong>. A distinção iônica/covalente é uma simplificação didática (IUPAC).`
+      polarNote:`⚠️ <em>Zona de transição</em> ΔEN=${dEN.toFixed(2)}: caráter iônico parcial (IUPAC).`
     };
-    if (dEN >= 0.4) return {type:'covalent', subtype:'covalent_polar', polarNote:null};
-    return {type:'covalent', subtype:'covalent_nonpolar', polarNote:null};
+    if (dEN >= 0.4) return { type:'covalent', subtype:'covalent_polar',    polarNote:null };
+    return              { type:'covalent', subtype:'covalent_nonpolar', polarNote:null };
   }
 
 
@@ -580,9 +918,56 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
-  /* ===================================================================
-     7. CONSTRUÇÃO DA TABELA PERIÓDICA
-     =================================================================== */
+  /* ── Atualiza o dimming da tabela periódica baseado no modo de ligação ativo ──
+     Elementos que não podem participar do tipo de ligação ativo ficam
+     marcados com uma classe 'bond-blocked' e tooltip de explicação.        */
+  function refreshTableDimming() {
+    document.querySelectorAll('.pt-cell[data-symbol]').forEach(cell => {
+      const sym = cell.dataset.symbol;
+      if (!sym || !ELEMENTS[sym]) return;
+
+      cell.classList.remove('bond-blocked', 'bond-incompatible');
+
+      if (!activeBondFilter) return; // sem filtro: sem dimming
+
+      let compatible = false;
+      if (activeBondFilter === 'metallic') {
+        compatible = METALLIC_CAPABLE.has(sym);
+      } else if (activeBondFilter === 'ionic') {
+        // Pode participar de ligação iônica como doador ou receptor
+        const cat = ELEMENTS[sym].category;
+        const isHydrideCompatible = (sym === 'H') || IONIC_HYDRIDE_METALS.has(sym);
+        compatible = !NOBLE_NO_IONIC.has(sym) &&
+                     !NOBLE_NEVER.has(sym) &&
+                     !isMetalloid(cat) &&
+                     (isMetal(cat) || isNonmetal(cat) || isHydrideCompatible);
+      } else if (activeBondFilter === 'covalent') {
+        compatible = !NOBLE_NEVER.has(sym) &&
+                     !(NOBLE_COVALENT_OK.has(sym) ? false : false); // Kr/Xe/Rn permitidos (com F/O)
+        // Dois metais puros nunca fazem covalente entre si, mas cada um pode fazer com ametal
+        // Na tabela, não há contexto de par, então mostramos todos exceto gases nobres leves
+        if (NOBLE_NEVER.has(sym)) compatible = false;
+      }
+
+      if (!compatible) {
+        cell.classList.add('bond-incompatible');
+        const oldLabel = cell.getAttribute('aria-label') || '';
+        cell.dataset.savedLabel = oldLabel;
+        const reason = activeBondFilter === 'metallic'
+          ? 'não é metal'
+          : activeBondFilter === 'ionic'
+          ? 'não participa de ligações iônicas clássicas'
+          : 'não forma ligações covalentes';
+        cell.setAttribute('aria-label',
+          `${ELEMENTS[sym].name} (${sym}) — ${reason} no modo ${activeBondFilter}. ${oldLabel}`);
+      } else if (cell.dataset.savedLabel) {
+        cell.setAttribute('aria-label', cell.dataset.savedLabel);
+        delete cell.dataset.savedLabel;
+      }
+    });
+  }
+
+
   function buildPeriodicTable() {
     ptGrid.innerHTML = '';
     const placed = new Map();
@@ -1093,6 +1478,19 @@ document.addEventListener('DOMContentLoaded', () => {
     warn._t = setTimeout(() => { warn.style.display='none'; }, 3500);
   }
 
+  /* Exibe aviso quando a capacidade iônica de um átomo está esgotada */
+  function showIonicCapacityWarning(sym, cap) {
+    const warn = document.getElementById('bond-order-warning');
+    const el   = ELEMENTS[sym];
+    if (!warn || !el) return;
+    const chargeStr = isMetal(el.category) ? `+${cap}` : `−${cap}`;
+    warn.textContent = `⚠️ ${sym} já atingiu sua capacidade iônica máxima (${chargeStr}). Não é possível formar mais ligações iônicas com este átomo.`;
+    warn.style.display = 'block';
+    clearTimeout(warn._t);
+    warn._t = setTimeout(() => { warn.style.display='none'; }, 4000);
+    announce(`${el.name} já atingiu capacidade iônica máxima ${chargeStr}.`, 'assertive');
+  }
+
   /* ===================================================================
      14. LÓGICA DE LIGAÇÕES
      =================================================================== */
@@ -1113,8 +1511,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (d<=bl*1.15) {
-          const {type,subtype,polarNote}=determineBondType(a.element,b.element);
-          formBond(a,b,type,polarNote,subtype);
+          // determineBondType retorna null se a combinação for inválida
+          const bondInfo = determineBondType(a.element, b.element);
+          if (!bondInfo) continue; // bloqueado pelo sistema de validação
+
+          const {type, subtype, polarNote} = bondInfo;
+
+          /* Guarda de valência iônica: nunca excede a capacidade do íon */
+          if (type === 'ionic' && !canFormIonicBond(a, b)) {
+            const capA = ionicCapacity(a.element), usedA = ionicBondCount(a.id);
+            const capB = ionicCapacity(b.element), usedB = ionicBondCount(b.id);
+            if (usedA >= capA) showIonicCapacityWarning(a.element, capA);
+            else               showIonicCapacityWarning(b.element, capB);
+            continue;
+          }
+
+          formBond(a, b, type, polarNote, subtype);
         }
       }
     }
@@ -1128,7 +1540,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function formBond(a, b, type, polarNote=null, subtype=null) {
+    if (!type) return; // bloqueado pelo sistema de validação
     const bond={a:a.id, b:b.id, type, subtype, order:1, polarNote};
+
     if (type==='covalent') {
       const rA=covalentCap(a.element)-bondOrderSum(a.id);
       const rB=covalentCap(b.element)-bondOrderSum(b.id);
@@ -1146,32 +1560,46 @@ document.addEventListener('DOMContentLoaded', () => {
         bond.order = Math.max(1, Math.min(rA, rB, 3));
       }
     }
+
     if (type==='ionic') {
-      const aIsM=isMetal(ELEMENTS[a.element].category);
-      const donor=aIsM?a:b, acceptor=donor===a?b:a;
-      const dMax=maxIonicCharge(donor.element), aMax=maxIonicCharge(acceptor.element);
-      if ((donor.charge||0)<dMax&&(acceptor.charge||0)>aMax) {
-        donor.charge=(donor.charge||0)+1; acceptor.charge=(acceptor.charge||0)-1; bond.transferred=1;
-      } else { bond.transferred=0; }
-      bond.donor=donor.id; bond.acceptor=acceptor.id;
+      /* Segunda guarda: nunca forma ligação iônica além da capacidade.
+         Garante que mesmo chamadas diretas (ex: mountPreset) respeitem
+         a valência do íon.                                              */
+      if (!canFormIonicBond(a, b)) return;
+
+      const aIsM = isMetal(ELEMENTS[a.element].category);
+      const donor    = aIsM ? a : b;
+      const acceptor = donor === a ? b : a;
+
+      /* Transfere exatamente 1 e⁻ por ligação iônica formada.
+         A carga acumula a cada nova ligação até atingir o máximo.
+         Ex: Ca (cap=2) + 2×Cl: 1ª ligação → Ca+1; 2ª → Ca+2.         */
+      donor.charge    = (donor.charge    || 0) + 1;
+      acceptor.charge = (acceptor.charge || 0) - 1;
+      bond.transferred = 1;
+      bond.donor    = donor.id;
+      bond.acceptor = acceptor.id;
     }
+
     bonds.push(bond);
     animateBondFormation(bond, a, b);
     updateInfoPanel(bond, a, b);
 
     /* A11Y: anuncia a formação da ligação */
     const typeNames = {covalent:'covalente', ionic:'iônica', metallic:'metálica'};
-    announce(`Liga\u00e7\u00e3o ${typeNames[type]||type} formada entre ${ELEMENTS[a.element].name} e ${ELEMENTS[b.element].name}.`);
+    announce(`Ligação ${typeNames[type]||type} formada entre ${ELEMENTS[a.element].name} e ${ELEMENTS[b.element].name}.`);
   }
 
   function removeBond(bond) {
-    if (bond.type==='ionic'&&bond.transferred) {
-      const d=canvasAtoms.find(at=>at.id===bond.donor);
-      const ac=canvasAtoms.find(at=>at.id===bond.acceptor);
-      if (d) d.charge-=bond.transferred;
-      if (ac) ac.charge+=bond.transferred;
+    if (bond.type === 'ionic') {
+      /* Reverte sempre 1 e⁻ por ligação iônica removida,
+         independente do valor de bond.transferred             */
+      const d  = canvasAtoms.find(at => at.id === bond.donor);
+      const ac = canvasAtoms.find(at => at.id === bond.acceptor);
+      if (d)  d.charge  = (d.charge  || 0) - 1;
+      if (ac) ac.charge = (ac.charge || 0) + 1;
     }
-    bonds=bonds.filter(b=>b!==bond);
+    bonds = bonds.filter(b => b !== bond);
   }
 
   /* ===================================================================
@@ -1668,8 +2096,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (bond.type==='ionic') {
       const d=canvasAtoms.find(at=>at.id===bond.donor), ac=canvasAtoms.find(at=>at.id===bond.acceptor);
-      const xtraIon = d && ac && bond.transferred
-        ? `<div class="bond-transfer">${ELEMENTS[d.element].name} → ${bond.transferred}e⁻ → ${ELEMENTS[ac.element].name}: <b>${d.element}${formatCharge(d.charge)}</b> + <b>${ac.element}${formatCharge(ac.charge)}</b></div>` : '';
+
+      /* Capacidade restante de cada íon */
+      const capDonor    = d  ? ionicCapacity(d.element)  : 0;
+      const capAcceptor = ac ? ionicCapacity(ac.element) : 0;
+      const usedDonor   = d  ? ionicBondCount(d.id)      : 0;
+      const usedAcceptor= ac ? ionicBondCount(ac.id)     : 0;
+      const remDonor    = Math.max(0, capDonor    - usedDonor);
+      const remAcceptor = Math.max(0, capAcceptor - usedAcceptor);
+
+      const xtraIon = d && ac
+        ? `<div class="bond-transfer">${ELEMENTS[d.element].name} → ${bond.transferred||1}e⁻ → ${ELEMENTS[ac.element].name}: <b>${d.element}${formatCharge(d.charge)}</b> + <b>${ac.element}${formatCharge(ac.charge)}</b></div>
+           <div class="bond-ionic-capacity">
+             <span>⚗️ ${d.element}: ${usedDonor}/${capDonor} ligações usadas${remDonor===0?' <b style="color:#ef4444">— saturado</b>':''}</span>
+             <span>⚗️ ${ac.element}: ${usedAcceptor}/${capAcceptor} ligações usadas${remAcceptor===0?' <b style="color:#ef4444">— saturado</b>':''}</span>
+           </div>` : '';
       return richHeader(BOND_DATA.ionic, xtraIon) + iupacNote;
     }
 
@@ -2790,6 +3231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setMode(type) {
       activeBondFilter = type;
+      refreshTableDimming(); // atualiza dimming da tabela periódica
 
       // Atualiza botões
       modeBtns.forEach(btn => {
