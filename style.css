@@ -545,6 +545,18 @@ body.theme-light #canvas {
 .atom:hover .atom-remove-x,
 #canvas.delete-mode .atom .atom-remove-x{opacity:1;}
 
+/* Célula bloqueada pelo modo de ligação ativo */
+.pt-cell.bond-incompatible {
+  opacity: .18 !important;
+  filter: grayscale(1);
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+/* Mantém a transição suave ao entrar/sair do modo */
+.pt-cell {
+  transition: transform .12s, box-shadow .12s, opacity .2s, filter .2s;
+}
+
 /* ============================================================  BOND LINES  */
 .bond-covalent{stroke:#4fc3f7;stroke-width:3;}
 .bond-ionic{stroke:#ffb74d;stroke-width:3;}
@@ -591,6 +603,21 @@ body.high-contrast .bond-angle-label { fill: #ffff00; stroke: #000; }
 .bond-order-tag{margin-top:4px;font-size:.68rem;color:#93c5fd;}
 .bond-polar-note{margin-top:3px;font-size:.65rem;color:#fca5a5;padding:3px 5px;background:rgba(239,68,68,.08);border-radius:4px;}
 .bond-nc-badge{display:inline-block;margin-top:4px;padding:2px 7px;background:rgba(167,243,208,.12);border:1px solid rgba(167,243,208,.3);border-radius:10px;font-size:.6rem;color:#6ee7b7;font-weight:700;}
+
+/* Capacidade iônica restante — exibida no painel de análise */
+.bond-ionic-capacity {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 5px;
+  padding: 5px 7px;
+  background: rgba(255,183,77,.08);
+  border: 1px solid rgba(255,183,77,.25);
+  border-radius: 6px;
+  font-size: .65rem;
+  color: #fcd34d;
+  line-height: 1.5;
+}
 
 /* ============================================================  ATOMS  */
 .atom{
@@ -1322,7 +1349,7 @@ body.high-contrast .mol-cat-btn.active-cat { background: #ffff00 !important; col
   .acc-header { padding: 7px 9px; font-size: .76rem; }
   .a11y-bar{ padding:4px 8px; gap:3px 5px; }
   .a11y-bar-label{display:none;}
-  .a11y-btn{ padding:3px 6px; font-size:.65rem;
+  .a11y-btn{ padding:3px 6px; font-size:.65rem; }
 }
 
 /* Touch devices */
